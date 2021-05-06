@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "145127551438",
+    "project_id": "tourassistant-569ca",
+    "storage_bucket": "tourassistant-569ca.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145127551438:android:1a921202ce49ee1e1d7b9f",
+        "android_client_info": {
+          "package_name": "com.tourassistant.coderoids"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "145127551438-f7f7ik570un5fegtt42be570asbkuo2f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tourassistant.coderoids",
+            "certificate_hash": "b77da95c347df8246f5fd7c8555bb6ed56303193"
+          }
+        },
+        {
+          "client_id": "145127551438-2qovcdso0f2oi3jcppg5br02051qn0qe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsj1AfcPr2KQK-UoCJ8c7TR61sYY9gMr0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "145127551438-2qovcdso0f2oi3jcppg5br02051qn0qe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

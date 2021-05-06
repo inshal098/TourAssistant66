@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_dashboard.xml"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.HomeFragment"
+        android:label=""
+        tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/tripsFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.TripsFragment"
+        android:label=""
+        tools:layout="@layout/fragment_trips" />
+    <fragment
+        android:id="@+id/editTripFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.EditTripFragment"
+        android:label=""
+        tools:layout="@layout/fragment_edit_trip" />
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.ProfileFragment"
+        android:label="" />
+    <fragment
+        android:id="@+id/inviteFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.InviteFragment"
+        tools:layout="@layout/fragment_invite" />
+    <fragment
+        android:id="@+id/friendRequestFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.FriendRequestFragment"
+        tools:layout="@layout/fragment_friend_request" />
+    <fragment
+        android:id="@+id/destinationsFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.DestinationsFragment"
+        tools:layout="@layout/fragment_destinations" />
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.EditProfileFragment"
+        tools:layout="@layout/profile_edit" />
+
+    <fragment
+        android:id="@+id/tripRoomFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.TripRoomFragment"
+        tools:layout="@layout/fragment_trip_room" />
+    <fragment
+        android:id="@+id/joinTripRequestFragment"
+        android:name="com.tourassistant.coderoids.home.fragments.JoinTripRequestFragment"
+        tools:layout="@layout/fragment_join_trip_request" />
+</navigation>

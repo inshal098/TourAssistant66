@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">TourAssistant</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="settings">Settings</string>
+    <string name="profile">Profile</string>
+    <string name="tour">Create a Tour</string>
+    <string name="logout">Logout</string>
+    <string name="title_activity_plan_trip">PlanTrip</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+    <string name="google_maps_key">AIzaSyCsj1AfcPr2KQK-UoCJ8c7TR61sYY9gMr0</string>
+    <string name="google_maps__browser_key">AIzaSyAJeIHyJnJjJdGHRtwmehsWZxrjkLPAEC0</string>
+    <string name="weather_forecast_id">923009cd2301b49afe9e958e0b55e8a6</string>
+    <string name="title_activity_start_trip">StartTrip</string>
+    <string name="location_permission_msg">To see maps for automatically tracked activities, allow Trip Assistant to use your location all of the time.</string>
+    <string name="runtime_permissions_txt">Please enable ALL permissions from app settings</string>
+
+</resources>

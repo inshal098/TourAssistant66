@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:fontFamily="@font/arimo"
+        android:padding="20dp"
+        android:textColor="@color/black"
+        android:text="Select Your Preferences, will try to show you what you like "
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <GridView
+        android:id="@+id/interests"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numColumns="3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <TextView
+        android:id="@+id/interestCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/arimo"
+        android:padding="20dp"
+        android:textColor="@color/black"
+        android:text=""
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/interests"
+        app:layout_constraintStart_toStartOf="@+id/interests"
+        app:layout_constraintTop_toBottomOf="@+id/interests"
+         />
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="30dp"
+        android:text="Save"
+        app:layout_constraintEnd_toEndOf="@+id/interestCount"
+        app:layout_constraintStart_toStartOf="@+id/interestCount"
+        app:layout_constraintTop_toBottomOf="@+id/interestCount" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
