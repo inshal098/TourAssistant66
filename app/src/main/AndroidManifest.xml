@@ -6,7 +6,6 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -23,9 +22,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".chatmodule.ChatRoomSingle"
+            android:label="@string/title_activity_chat_room_single">
+        </activity>
+        <activity android:name=".chatmodule.ChatParentActivity" />
         <activity
             android:name=".starttrip.StartTrip"
-            android:label="@string/title_activity_start_trip"></activity>
+            android:label="@string/title_activity_start_trip" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -57,17 +62,17 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-        <service
-            android:name="com.tourassistant.coderoids.services.LocationService"
-            android:foregroundServiceType="location" />
 
-        <service android:name="com.tourassistant.coderoids.services.FCMPushNotificationService"
+        <service
+            android:name=".services.LocationService"
+            android:foregroundServiceType="location" />
+        <service
+            android:name=".services.FCMPushNotificationService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
     </application>
 
 </manifest>

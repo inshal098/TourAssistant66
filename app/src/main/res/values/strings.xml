@@ -19,5 +19,6 @@
     <string name="title_activity_start_trip">StartTrip</string>
     <string name="location_permission_msg">To see maps for automatically tracked activities, allow Trip Assistant to use your location all of the time.</string>
     <string name="runtime_permissions_txt">Please enable ALL permissions from app settings</string>
+    <string name="title_activity_chat_room_single">ChatRoomSingle</string>
 
 </resources>

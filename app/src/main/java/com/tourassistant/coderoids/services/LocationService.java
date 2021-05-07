@@ -79,7 +79,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         startTracking();
         arrayTruckLocation = new ArrayList<>();
         updateTruck();
-        startListening();
+        //startListening();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startMyOwnForeground();
         }

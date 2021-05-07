@@ -47,8 +47,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -80,6 +83,9 @@ public class DashboardActivity extends AppCompatActivity implements
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String PROPERTY_REG_ID = "registration_id";
     public BroadcastReceiver receiver;
+    private DatabaseReference mDatabase;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,9 +96,28 @@ public class DashboardActivity extends AppCompatActivity implements
         RegisterGCM();
         startLocationService();
 
-        EventListnerManager  eventListnerManager  = new EventListnerManager(this);
-        eventListnerManager.startListening();
-        eventListnerManager.initializeBroadCastRec(receiver);
+//        EventListnerManager  eventListnerManager  = new EventListnerManager(this);
+//        eventListnerManager.startListening();
+//        eventListnerManager.initializeBroadCastRec(receiver);
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if(AppHelper.currentProfileInstance!= null && AppHelper.currentProfileInstance.getUserId() != null) {
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+            mDatabase.child("userChats").child(AppHelper.currentProfileInstance.getUserId()).child(AppHelper.currentProfileInstance.getUserId()).setValue("");
+        }
+//        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot snapshot) {
+//                if (!snapshot.hasChild("userChats")) {
+//                    mDatabase.setValue("userChats");
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//
+//            }
+//        });
+
     }
 
     protected int getLayoutResourceId() {
@@ -126,9 +151,6 @@ public class DashboardActivity extends AppCompatActivity implements
                         fireBaseRegistration.setToken(newToken);
                         fireBaseRegistration.setTimeinMIllis(System.currentTimeMillis()+"");
                         rootRef.collection("RegistrationUserId").document(firebaseUser.getUid()).set(fireBaseRegistration);
-                        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-                        mDatabase.child("RegistrationUserId");
-                        mDatabase.child("RegistrationUserId").setValue(fireBaseRegistration);
                     }
                 });
     }
@@ -311,7 +333,8 @@ public class DashboardActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(receiver);
+        if(receiver != null)
+            unregisterReceiver(receiver);
     }
 
     @Override

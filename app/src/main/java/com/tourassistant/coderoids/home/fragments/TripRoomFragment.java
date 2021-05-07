@@ -54,6 +54,7 @@ import com.tourassistant.coderoids.adapters.FriendsAdapter;
 import com.tourassistant.coderoids.adapters.ImagesAdapter;
 import com.tourassistant.coderoids.adapters.TripDetailAdapter;
 import com.tourassistant.coderoids.adapters.TripRequestAdapter;
+import com.tourassistant.coderoids.chatmodule.ChatParentActivity;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.models.PlacesModel;
 import com.tourassistant.coderoids.models.Profile;
@@ -86,6 +87,8 @@ public class TripRoomFragment extends Fragment {
     private LatLng[] likelyPlaceLatLngs;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     TripRequestAdapter friendsAdapter;
+    LinearLayout chat;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,6 +114,7 @@ public class TripRoomFragment extends Fragment {
         tripImages = view.findViewById(R.id.tripImages);
         rvFriends = view.findViewById(R.id.friends_list);
         startTrip = view.findViewById(R.id.start_trip_ll);
+        chat = view.findViewById(R.id.chat);
 
         llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -139,6 +143,13 @@ public class TripRoomFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getActivity(), StartTrip.class));
+            }
+        });
+
+        chat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(),ChatParentActivity.class));
             }
         });
     }
@@ -242,21 +253,22 @@ public class TripRoomFragment extends Fragment {
                         Place.Field.LAT_LNG, Place.Field.ADDRESS_COMPONENTS,
                         Place.Field.BUSINESS_STATUS, Place.Field.RATING, Place.Field.PHOTO_METADATAS,
                         Place.Field.USER_RATINGS_TOTAL, Place.Field.TYPES);
-
-                final FetchPlaceRequest request = FetchPlaceRequest.newInstance(documentSnapshot.getDestinationId(), placeFields);
-                placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
-                    Place place = response.getPlace();
-                    AppHelper.tripRoomPlace = place;
-                    populateCurrentPlaceDetail(place);
-                    Log.i("Status", "Place found: " + place.getName());
-                }).addOnFailureListener((exception) -> {
-                    if (exception instanceof ApiException) {
-                        final ApiException apiException = (ApiException) exception;
-                        Log.e("Status", "Place not found: " + exception.getMessage());
-                        final int statusCode = apiException.getStatusCode();
-                        // TODO: Handle error with given status code.
-                    }
-                });
+                if(documentSnapshot.getDestinationId() != null) {
+                    final FetchPlaceRequest request = FetchPlaceRequest.newInstance(documentSnapshot.getDestinationId(), placeFields);
+                    placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+                        Place place = response.getPlace();
+                        AppHelper.tripRoomPlace = place;
+                        populateCurrentPlaceDetail(place);
+                        Log.i("Status", "Place found: " + place.getName());
+                    }).addOnFailureListener((exception) -> {
+                        if (exception instanceof ApiException) {
+                            final ApiException apiException = (ApiException) exception;
+                            Log.e("Status", "Place not found: " + exception.getMessage());
+                            final int statusCode = apiException.getStatusCode();
+                            // TODO: Handle error with given status code.
+                        }
+                    });
+                }
             }
         });
     }
