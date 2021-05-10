@@ -55,6 +55,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.tourassistant.coderoids.BaseActivity;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.InterestSelectionRecyclerView;
 import com.tourassistant.coderoids.adapters.TripsDestinationAdapter;
@@ -321,56 +322,53 @@ public class EditTripFragment extends Fragment {
     }
 
     private void saveTripDetails() {
-        dialog.setMessage("Updating...");
-        dialog.setIndeterminate(true);
-        dialog.show();
-        TripEntity tripEntity = AppHelper.tripEntityList;
-        tripEntity.setTripTitle(tvTripName.getText().toString());
-        tripEntity.setTripDescription(tvTextDesctiption.getText().toString());
-        tripEntity.setStartDate(tvStartDate.getText().toString());
-        tripEntity.setEndDate(tvEndDate.getText().toString());
-        tripEntity.setDestination(etDestinaation.getText().toString());
-        tripEntity.setFirebaseUserId(users.getUid());
-        tripEntity.setCreatorName(users.getDisplayName());
-        if(AppHelper.tripEntityList.getJoinTripRequests() != null && !AppHelper.tripEntityList.getJoinTripRequests().matches("")){
-            tripEntity.setJoinTripRequests(AppHelper.tripEntityList.getJoinTripRequests());
-        } else
-            tripEntity.setJoinTripRequests("");
-        if (swTripState.isChecked()) {
-            tripState.setText("Your Trip is Private only You can view this");
-            tripEntity.setIsPrivate("1");
-        } else {
-            tripState.setText("Any one Can view Public Trips on Trip Assistant");
-            tripEntity.setIsPrivate("0");
-        }
-
-        try {
-//            for (int i = 0; i < rowState.length; i++) {
-//                if (rowState[i]) {
-//                    JSONObject jsonObject = new JSONObject();
-//                    jsonObject.put("interestName", interests.get(i).getString("interestName"));
-//                    jsonObject.put("interestId", interests.get(i).getId());
-//                    intrestArray.put(jsonObject);
-//                }
-//            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                tripEntity.setTripTags(intrestArray + "");
-                //AppDatabase.getAppDatabase(getActivity()).tripDao().updateTrip(tripEntity);
-                FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-                String uid = users.getUid();
-                rootRef.collection("Trips").document(uid).collection("UserTrips").document(tripEntity.getFirebaseId()).set(tripEntity);
-                dialog.dismiss();
-                if (!swTripState.isChecked()) {
-                    rootRef.collection("PublicTrips").document(tripEntity.getFirebaseId()).set(tripEntity);
-                }
+        if (!etDestinaation.getText().toString().matches("")) {
+            dialog.setMessage("Updating...");
+            dialog.setIndeterminate(true);
+            dialog.show();
+            TripEntity tripEntity = AppHelper.tripEntityList;
+            tripEntity.setTripTitle(tvTripName.getText().toString());
+            tripEntity.setTripDescription(tvTextDesctiption.getText().toString());
+            tripEntity.setStartDate(tvStartDate.getText().toString());
+            tripEntity.setEndDate(tvEndDate.getText().toString());
+            tripEntity.setDestination(etDestinaation.getText().toString());
+            tripEntity.setFirebaseUserId(users.getUid());
+            tripEntity.setCreatorName(users.getDisplayName());
+            if (AppHelper.tripEntityList.getJoinTripRequests() != null && !AppHelper.tripEntityList.getJoinTripRequests().matches("")) {
+                tripEntity.setJoinTripRequests(AppHelper.tripEntityList.getJoinTripRequests());
+            } else
+                tripEntity.setJoinTripRequests("");
+            if (swTripState.isChecked()) {
+                tripState.setText("Your Trip is Private only You can view this");
+                tripEntity.setIsPrivate("1");
+            } else {
+                tripState.setText("Any one Can view Public Trips on Trip Assistant");
+                tripEntity.setIsPrivate("0");
             }
-        });
+
+            tripEntity.setTripLocationTracking("0");
+            BaseActivity.baseActivityInstance.editorLogin.putString("isTripInProgress", tripEntity.getTripLocationTracking()).apply();
+            try {
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    tripEntity.setTripTags(intrestArray + "");
+                    //AppDatabase.getAppDatabase(getActivity()).tripDao().updateTrip(tripEntity);
+                    FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                    String uid = users.getUid();
+                    rootRef.collection("Trips").document(uid).collection("UserTrips").document(tripEntity.getFirebaseId()).set(tripEntity);
+                    dialog.dismiss();
+                    if (!swTripState.isChecked()) {
+                        rootRef.collection("PublicTrips").document(tripEntity.getFirebaseId()).set(tripEntity);
+                    }
+                }
+            });
+        } else
+            Toast.makeText(getContext(), "To Save Trip, Destination is Mandatory", Toast.LENGTH_SHORT).show();
     }
 
 

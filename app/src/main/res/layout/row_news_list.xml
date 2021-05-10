@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white_alpha">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_trip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_rowWeight="1"
+        android:layout_columnWeight="1"
+        android:layout_margin="10dp"
+        android:backgroundTint="@color/white_alpha"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#fff"
+            android:elevation="8dp"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/news_title"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:text="Lorem Ipsum Dolor Amet, Consectetur Adipiscing Elit Ipsum Dolor Amet"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:layout_below="@+id/news_time"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/news_description"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/news_title"
+                android:layout_marginTop="10dp"
+                android:text="There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form..."
+                android:textColor="@color/black"
+                android:textSize="14dp" />
+
+            <TextView
+                android:id="@+id/news_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="30 min ago"
+                android:layout_alignParentTop="true"
+                android:textColor="@color/black"
+                android:textSize="12dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/posted_by"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/iv_news_image"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="10dp"
+                android:layout_toEndOf="@+id/news_time"
+                android:gravity="end"
+                android:text="By : "
+                android:textColor="@color/black"
+                android:textSize="12dp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/iv_news_image"
+                android:layout_width="80dp"
+                android:layout_height="150dp"
+                android:layout_marginLeft="5dp"
+                android:layout_toRightOf="@+id/news_title"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:scaleType="centerCrop"
+                android:layout_toEndOf="@+id/news_title"
+                android:src="@drawable/ic_placeholder_24" />
+
+        </RelativeLayout>
+    </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

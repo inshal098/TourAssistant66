@@ -154,7 +154,6 @@
                 android:layout_margin="5dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-
                 tools:ignore="MissingConstraints" />
 
             <TextView

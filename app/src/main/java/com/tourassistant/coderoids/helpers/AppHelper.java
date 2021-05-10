@@ -64,9 +64,10 @@ public class AppHelper {
     public static String lastCoordinates;
     public static Location location;
     public static Place selectedPlace;
-    public static Place tripRoomPlace;
+    public static ArrayList<Place> tripRoomPlace;
     public static DocumentSnapshot currentChatRecieverInstance;
     public static String currentChatThreadId;
+    public static String inProgressTripId;
     private static AppHelper instance = null;
     public static Context context;
     public static TripEntity tripEntityList = new TripEntity();
@@ -161,15 +162,6 @@ public class AppHelper {
         return df.format(c.getTime());
     }
 
-    public static String convertMilliToDateTime(long milliSeconds) {
-        // Create a DateFormatter object for displaying date in specified format.
-        SimpleDateFormat formatter = new SimpleDateFormat(defaultDateTimeFormat, java.util.Locale.getDefault());
-
-        // Create a calendar object that will convert the date and time value in milliseconds to date.
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(milliSeconds);
-        return formatter.format(calendar.getTime());
-    }
 
 
     public static String removeSpaceInTime(String time) {
@@ -215,6 +207,15 @@ public class AppHelper {
         return flag;
     }
 
+    public static String convertMilliToDateTime(long milliSeconds) {
+        // Create a DateFormatter object for displaying date in specified format.
+        SimpleDateFormat formatter = new SimpleDateFormat(defaultDateTimeFormat, java.util.Locale.getDefault());
+
+        // Create a calendar object that will convert the date and time value in milliseconds to date.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(milliSeconds);
+        return formatter.format(calendar.getTime());
+    }
 
 
     public File createFolder(String subDirectory, String fileName, Bitmap imageToSave, Activity activity, String customerID, boolean isHighRes) {

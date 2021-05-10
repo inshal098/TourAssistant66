@@ -218,7 +218,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
         }
     }
 
-    private void getAllTrips() {
+    public void getAllTrips() {
         try {
             populateTrips();
         } catch (Exception ex){

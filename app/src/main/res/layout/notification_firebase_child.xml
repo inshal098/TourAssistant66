@@ -21,9 +21,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Allotrac "
+            android:text="Trip Assistant "
             android:textSize="7sp"
-            android:textColor="@color/appTheme"/>
+            android:textColor="@color/quantum_yellow"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -59,7 +59,7 @@
             style="@style/TextAppearance.Compat.Notification.Title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pickup - "
+            android:text=""
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -87,7 +87,7 @@
             style="@style/TextAppearance.Compat.Notification.Title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delivery - "
+            android:text=""
             android:textSize="14sp"
             android:textStyle="bold" />
 

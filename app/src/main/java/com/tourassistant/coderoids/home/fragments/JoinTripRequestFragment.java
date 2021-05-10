@@ -20,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.FollowRequestAdapter;
 import com.tourassistant.coderoids.adapters.TripRequestAdapter;
+import com.tourassistant.coderoids.api.NotificationAPI;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.helpers.NotificationPublisher;
 import com.tourassistant.coderoids.interfaces.onClickListner;
@@ -115,6 +116,7 @@ public class JoinTripRequestFragment extends Fragment implements onClickListner 
             String userId = AppHelper.currentProfileInstance.getUserId();
             DocumentReference uidRefPublic = rootRef.collection("PublicTrips").document(tripId);
             Profile profile = profiles.get(pos);
+            String recieverId =  profile.getUserId();
             if (tripRequest.toString().contains(profile.getUserId())) {
                 for (int i = 0; i < tripRequest.length(); i++) {
                     if (tripRequest.getJSONObject(i).getString("userId").matches(profile.getUserId())) {
@@ -124,12 +126,15 @@ public class JoinTripRequestFragment extends Fragment implements onClickListner 
                 }
             }
             uidRefPublic.update("joinTripRequests", tripRequest + "");
+            DocumentReference uidRefPersonal = rootRef.collection("Trips").document(userId).collection("UserTrips").document(AppHelper.tripEntityList.getFirebaseId());
+            uidRefPersonal.update("joinTripRequests", tripRequest + "");
+
             JSONArray jsonArray = new JSONArray();
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("id" ,tripId);
             jsonObject.put("message" ,"Your Request To Join a Trip is Approved");
             jsonArray.put(jsonObject);
-            NotificationPublisher notificationPublisher = new NotificationPublisher(getContext(),"PublicTrips" ,jsonArray+"",profile.getUserId());
+            NotificationPublisher notificationPublisher = new NotificationPublisher(getContext(),"PublicTripsRequest" ,jsonArray+"",profile.getUserId());
             notificationPublisher.publishNotification();
             profiles.remove(pos);
             tripRequestAdapter.notifyDataSetChanged();

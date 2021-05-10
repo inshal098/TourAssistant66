@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -41,6 +42,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
+import com.tourassistant.coderoids.helpers.LocationHelper;
 import com.tourassistant.coderoids.models.NotificationPublish;
 import com.tourassistant.coderoids.models.TripCurrentLocation;
 
@@ -63,7 +65,8 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     LocationRequest locationRequest;
     private GoogleApiClient googleApiClient;
     private IBinder mBinder = new LocationServiceBinder();
-
+    SharedPreferences.Editor editorLogin;
+    SharedPreferences prefLogin;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -76,6 +79,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         Log.e("Service", " Location");
         shouldContinueRunnable = true;
         instance = this;
+        prefLogin = getSharedPreferences("logindata", Context.MODE_PRIVATE);
+        editorLogin = prefLogin.edit();
+        editorLogin.apply();
         startTracking();
         arrayTruckLocation = new ArrayList<>();
         updateTruck();
@@ -160,28 +166,24 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             public void run() {
                 if (shouldContinueRunnable) {
                     try {
-                        LocationManager locationManager = (LocationManager) getSystemService(
-                                Context.LOCATION_SERVICE);
+                        LocationHelper location = LocationHelper.getInstance();
                         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                                 ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                             return;
                         }
-                        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
+                        double latitude = Double.parseDouble(location.getLatitude());
+                        double longitude = Double.parseDouble(location.getLongitude());
                         Log.e("Service", " Lat" +  latitude +"," +longitude);
-                        String currentTime = String.valueOf(System.currentTimeMillis());
-                        TripCurrentLocation tripCurrentLocation = new TripCurrentLocation();
-                        tripCurrentLocation.setLatitude(latitude+"");
-                        tripCurrentLocation.setLongitude(longitude+"");
-                        tripCurrentLocation.setSpeed(location.getSpeed()+"");
-                        tripCurrentLocation.setTime(currentTime+"");
-                        FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-                        FirebaseUser users = FirebaseAuth.getInstance().getCurrentUser();
-                        rootRef.collection("Trips").document(users.getUid())
-                                .collection("UserTrips")
-                                .document(AppHelper.tripEntityList.getFirebaseId()).collection("TripCoordinates").document(currentTime).set(tripCurrentLocation);
-
+                        if(prefLogin.getString("isTripInProgress" ,"0").matches("1")) {
+                            String currentTime = String.valueOf(System.currentTimeMillis());
+                            TripCurrentLocation tripCurrentLocation = new TripCurrentLocation();
+                            tripCurrentLocation.setLatitude(latitude + "");
+                            tripCurrentLocation.setLongitude(longitude + "");
+                            tripCurrentLocation.setSpeed(location.getSpeed() + "");
+                            tripCurrentLocation.setTime(currentTime + "");
+                            //FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                            //rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("TripCoordinates").document(currentTime).set(tripCurrentLocation);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -261,12 +263,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             return true;
         }
         return false;
-
     }
 
-
     @Override
-
     public void onDestroy() {
         super.onDestroy();
         try {
@@ -321,6 +320,13 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
             if (location.getAccuracy() < 500.0f) {
             }
+            LocationHelper helper = LocationHelper.getInstance();
+            helper.setLatitude("" + location.getLatitude());
+            helper.setLongitude("" + location.getLongitude());
+            helper.setSpeed("" + 3.6 * location.getSpeed()); //changed from 4
+            helper.setBearing("" + location.getBearing());
+            helper.setGpsCoordinate( location.getLatitude() + "," + location.getLongitude());
+            helper.setLocation(location);
         }
     }
 

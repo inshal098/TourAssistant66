@@ -65,7 +65,7 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
                     viewHolder.btnFollow.setBackgroundColor(context.getResources().getColor(R.color.purple));
                 }
             } else {
-                if(AppHelper.currentProfileInstance.getUserId().matches(tripRequesArray.get(position).getUserId())){
+                if(tripRequesArray.get(position).getUserId().matches(AppHelper.tripEntityList.getFirebaseUserId())){
                     viewHolder.btnFollow.setText("Admin");
                 } else
                     viewHolder.btnFollow.setText("Member");
@@ -79,8 +79,9 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
             viewHolder.btnFollow.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(viewHolder.btnFollow.getText().toString().matches("Accept Request") && onClickListner != null)
+                    if(viewHolder.btnFollow.getText().toString().matches("Accept Request") && onClickListner != null){
                         onClickListner.onClick(finalPosition,null);
+                    }
                 }
             });
         } catch (Exception e) {

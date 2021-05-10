@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper;
 import com.tourassistant.coderoids.plantrip.tripdb.TripDao;
 import com.tourassistant.coderoids.plantrip.tripdb.TripEntity;
 
-@Database(entities = {TripEntity.class}, version = 6 , exportSchema = false)
+@Database(entities = {TripEntity.class}, version = 7 , exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "notification_room_db";

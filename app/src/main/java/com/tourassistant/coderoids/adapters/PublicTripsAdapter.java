@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PublicTripsAdapter extends RecyclerView.Adapter<PublicTripsAdapter.ViewHolder> {
@@ -94,17 +95,18 @@ public class PublicTripsAdapter extends RecyclerView.Adapter<PublicTripsAdapter.
                         try {
                             JSONArray jsonArray = new JSONArray();
                             JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("id" ,AppHelper.tripEntityList.getFirebaseId());
-                            jsonObject.put("message" ,"You Have Received a  new Request");
+                            jsonObject.put("id" ,documentSnapshot.getId());
+                            jsonObject.put("message" ,AppHelper.currentProfileInstance.getDisplayName()+" has Requested To Join a Trip");
                             jsonArray.put(jsonObject);
                             NotificationPublisher notificationPublisher = new NotificationPublisher(context
-                                    ,"PublicTrips" ,jsonArray+"",AppHelper.tripEntityList.getFirebaseUserId());
+                                    ,"PublicTripsRequest" ,jsonArray+"",documentSnapshot.getString("firebaseUserId"));
                             notificationPublisher.publishNotification();
                         }catch (JSONException ex){
                             ex.printStackTrace();
                         }
                     } else if (viewHolder.trips.getText().toString().matches("Trip Room")) {
                         AppHelper.tripRoomSnap = documentSnapshot;
+                        AppHelper.tripRoomPlace = new ArrayList<>();
                         AppHelper.tripEntityList  = documentSnapshot.toObject(TripEntity.class);
                         Navigation.findNavController(v).navigate(R.id.tripRoomFragment);
                     } else if (viewHolder.trips.getText().toString().matches("Request Sent")) {

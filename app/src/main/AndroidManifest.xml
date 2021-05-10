@@ -3,7 +3,6 @@
     package="com.tourassistant.coderoids">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -21,12 +20,13 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".starttrip.ReportHazard"></activity>
+        <activity android:name=".starttrip.ForecastTripActivity" />
         <activity
             android:name=".chatmodule.ChatRoomSingle"
-            android:label="@string/title_activity_chat_room_single">
-        </activity>
+            android:label="@string/title_activity_chat_room_single" />
         <activity android:name=".chatmodule.ChatParentActivity" />
         <activity
             android:name=".starttrip.StartTrip"
@@ -66,13 +66,15 @@
         <service
             android:name=".services.LocationService"
             android:foregroundServiceType="location" />
-        <service
-            android:name=".services.FCMPushNotificationService"
-            android:exported="false">
+        <service android:name=".services.FCMPushNotificationService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name="com.pixako.Receiver.AlarmReceiver"
+            android:enabled="true" />
     </application>
 
 </manifest>

@@ -88,26 +88,27 @@ public class FilterPublicTrips {
                             usersInterest = new JSONArray(profileList.get("interests").toString());
                             for (int i = 0; i < publicTrips.size(); i++) {
                                 DocumentSnapshot documentSnapshot1 = publicTrips.get(i);
-                                if (documentSnapshot1.getString("tripTags") != null && !documentSnapshot1.getString("tripTags").matches("")) {
-                                    JSONArray tripInterestTag = new JSONArray(documentSnapshot1.getString("tripTags"));
-                                    if (tripInterestTag.length() > 0) {
-                                        for (int k = 0; k < tripInterestTag.length(); k++) {
-                                            boolean isMatched = false;
-                                            JSONObject tripJob = tripInterestTag.getJSONObject(k);
-                                            for (int j = 0; j < usersInterest.length(); j++) {
-                                                JSONObject userInterest = usersInterest.getJSONObject(j);
-                                                if (userInterest.getString("interestId").matches(tripJob.getString("interestId"))
-                                                        && !documentSnapshot1.getString("firebaseUserId").matches(users.getUid())) {
-                                                    filteredArray.add(documentSnapshot1);
-                                                    isMatched = true;
-                                                    break;
+                                if (!documentSnapshot1.getString("firebaseUserId").matches(users.getUid())) {
+                                    if (documentSnapshot1.getString("tripTags") != null && !documentSnapshot1.getString("tripTags").matches("")) {
+                                        JSONArray tripInterestTag = new JSONArray(documentSnapshot1.getString("tripTags"));
+                                        if (tripInterestTag.length() > 0) {
+                                            for (int k = 0; k < tripInterestTag.length(); k++) {
+                                                boolean isMatched = false;
+                                                JSONObject tripJob = tripInterestTag.getJSONObject(k);
+                                                for (int j = 0; j < usersInterest.length(); j++) {
+                                                    JSONObject userInterest = usersInterest.getJSONObject(j);
+                                                    if (userInterest.getString("interestId").matches(tripJob.getString("interestId"))) {
+                                                        filteredArray.add(documentSnapshot1);
+                                                        isMatched = true;
+                                                        break;
+                                                    }
                                                 }
+                                                if (isMatched)
+                                                    break;
                                             }
-                                            if (isMatched)
-                                                break;
+                                        } else {
+                                            requestCompletionListener.onListFilteredCompletion(false);
                                         }
-                                    } else {
-                                        requestCompletionListener.onListFilteredCompletion(false);
                                     }
                                 }
                             }
@@ -115,7 +116,8 @@ public class FilterPublicTrips {
                             if (filteredArray.size() > 0) {
                                 AppHelper.filteredTrips = filteredArray;
                                 requestCompletionListener.onListFilteredCompletion(true);
-                            }
+                            } else
+                                requestCompletionListener.onListFilteredCompletion(false);
                         } else
                             requestCompletionListener.onListFilteredCompletion(false);
                     } else

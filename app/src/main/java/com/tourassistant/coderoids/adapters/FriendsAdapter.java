@@ -19,9 +19,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
+import com.tourassistant.coderoids.helpers.NotificationPublisher;
 import com.tourassistant.coderoids.interfaces.onClickListner;
 import com.tourassistant.coderoids.models.FriendRequestModel;
 import com.tourassistant.coderoids.plantrip.tripdb.TripEntity;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -30,6 +35,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     List<DocumentSnapshot> friendsList;
     boolean[] rowState;
     com.tourassistant.coderoids.interfaces.onClickListner onClickListner;
+    JSONArray tripRequest;
 
     public FriendsAdapter(Context applicationContext, List<DocumentSnapshot> friendsList, onClickListner onClickListner, boolean[] rowState) {
         this.context = applicationContext;
@@ -52,10 +58,32 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         try {
             try {
                 DocumentSnapshot documentSnapshot = friendsList.get(position);
-                String reciverId = documentSnapshot.getString("userFirestoreIdReceiver");
-                String senderId = documentSnapshot.getString("userFirestoreIdSender");
+                String currentUser = documentSnapshot.getString("userFirestoreIdReceiver");
+                String reciverId = documentSnapshot.getString("userFirestoreIdSender");
+
+                if(currentUser.matches(AppHelper.currentProfileInstance.getUserId())) {
+                    currentUser = AppHelper.currentProfileInstance.getUserId();
+                }
+                else if(currentUser.matches(AppHelper.currentProfileInstance.getUserId())) {
+                    currentUser =documentSnapshot.getString("userFirestoreIdSender");
+                    reciverId =documentSnapshot.getString("userFirestoreIdReceiver");
+                }
+
                 viewHolder.mtUserName.setText(documentSnapshot.getString("userName"));
-                if(rowState != null) {
+                if (!AppHelper.tripEntityList.getJoinTripRequests().matches("") && AppHelper.tripEntityList.getJoinTripRequests() != null) {
+                    tripRequest = new JSONArray(AppHelper.tripEntityList.getJoinTripRequests());
+                    for (int i = 0; i < tripRequest.length(); i++) {
+                        if (tripRequest.getJSONObject(i).getString("userId").matches(reciverId) && tripRequest.getJSONObject(i).has("status") && tripRequest.getJSONObject(i).getString("status").matches("1")) {
+                            rowState[position] = true;
+                            break;
+                        } else if (tripRequest.getJSONObject(i).getString("userId").matches(reciverId) && !tripRequest.getJSONObject(i).has("status")) {
+                            rowState[position] = false;
+                            break;
+                        }
+                    }
+
+                }
+                if (rowState != null) {
                     if (rowState[position]) {
                         viewHolder.btnFollow.setText("Added");
                         viewHolder.btnFollow.setBackgroundColor(context.getResources().getColor(R.color.green));
@@ -65,29 +93,45 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     viewHolder.btnFollow.setVisibility(View.GONE);
                 }
                 int finalPosition = position;
+                String finalReciverId = reciverId;
+                String finalCurrentUser = currentUser;
                 viewHolder.btnFollow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (!rowState[finalPosition]) {
-                            rowState[finalPosition] = true;
-                            FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-                            String friends = "";
-                            if (AppHelper.tripEntityList.getFriends() != null)
-                                friends = AppHelper.tripEntityList.getFriends();
-                            if (friends.matches(""))
-                                friends = reciverId;
-                            else
-                                friends = friends + "," + reciverId;
-                            AppHelper.tripEntityList.setFriends(friends);
-                            rootRef.collection("Trips").document(reciverId).collection("UserTrips").document(AppHelper.tripEntityList.getFirebaseId()).set(AppHelper.tripEntityList);
-                            rootRef.collection("Trips").document(senderId).collection("UserTrips").document(AppHelper.tripEntityList.getFirebaseId()).set(AppHelper.tripEntityList);
-                        } else
-                            Toast.makeText(context, "Invitation To this User is Already Sent", Toast.LENGTH_SHORT).show();
+                        if (viewHolder.btnFollow.getText().toString().matches("Add")) {
+                            if (!rowState[finalPosition]) {
+                                rowState[finalPosition] = true;
+                                FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                                if (tripRequest == null || tripRequest.length() == 0)
+                                    tripRequest = new JSONArray();
+                                JSONObject jsonObject = new JSONObject();
+                                try {
+                                    jsonObject.put("userId", finalReciverId);
+                                    jsonObject.put("status", "1");
+
+                                    tripRequest.put(jsonObject);
+                                    DocumentReference uidRefPublic = rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId());
+                                    DocumentReference uidRefPublicPers = rootRef.collection("Trips").document(AppHelper.currentProfileInstance.getUserId()).collection("UserTrips").document(AppHelper.tripEntityList.getFirebaseId());
+                                    uidRefPublicPers.update("joinTripRequests", tripRequest + "");
+                                    uidRefPublic.update("joinTripRequests", tripRequest + "");
+                                    JSONArray jsonArray = new JSONArray();
+                                    JSONObject notiObj = new JSONObject();
+                                    notiObj.put("id", AppHelper.tripEntityList.getFirebaseId());
+                                    notiObj.put("message", "You Have been Added to a Trip");
+                                    jsonArray.put(jsonObject);
+                                    NotificationPublisher notificationPublisher = new NotificationPublisher(context, "PublicTripsRequest", jsonArray + "", finalReciverId);
+                                    notificationPublisher.publishNotification();
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            } else
+                                Toast.makeText(context, "Invitation To this User is Already Sent", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (JSONException jsonException) {
+                jsonException.printStackTrace();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,6 +146,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     public class ViewHolder extends RecyclerView.ViewHolder {
         MaterialTextView mtUserName;
         MaterialButton btnFollow;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mtUserName = itemView.findViewById(R.id.tv_name);

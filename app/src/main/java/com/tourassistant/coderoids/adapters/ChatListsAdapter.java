@@ -2,6 +2,8 @@ package com.tourassistant.coderoids.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,18 +13,23 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.chatmodule.ChatAdapter;
 import com.tourassistant.coderoids.chatmodule.ChatRoomSingle;
 import com.tourassistant.coderoids.chatmodule.model.ChatModel;
 import com.tourassistant.coderoids.helpers.AppHelper;
+import com.tourassistant.coderoids.models.Profile;
 
 import java.util.ArrayList;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatListsAdapter extends RecyclerView.Adapter<ChatListsAdapter.ViewHolder> {
     Context context;
     String type;
     ArrayList<String> chat;
+
     public ChatListsAdapter(Context applicationContext, ArrayList<String> chat) {
         this.context = applicationContext;
         this.chat = chat;
@@ -41,10 +48,19 @@ public class ChatListsAdapter extends RecyclerView.Adapter<ChatListsAdapter.View
         position = viewHolder.getAdapterPosition();
         try {
             int finalPosition = position;
+            Profile profile = fetchRecieverId(chat.get(position));
+            if(profile != null) {
+                viewHolder.chatDesc.setText(profile.getDisplayName());
+                if (profile.getProfileImage() != null) {
+                    byte[] bytes = profile.getProfileImage().toBytes();
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    viewHolder.profileImage.setImageBitmap(bmp);
+                }
+            }
             viewHolder.chatsRow.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(AppHelper.currentChatRecieverInstance != null)
+                    if (AppHelper.currentChatRecieverInstance != null)
                         AppHelper.currentChatRecieverInstance = null;
                     AppHelper.currentChatThreadId = chat.get(finalPosition);
                     context.startActivity(new Intent(context, ChatRoomSingle.class));
@@ -55,6 +71,30 @@ public class ChatListsAdapter extends RecyclerView.Adapter<ChatListsAdapter.View
         }
     }
 
+    private Profile fetchRecieverId(String s) {
+        DocumentSnapshot documentSnapshot = null;
+        Profile profile = null;
+        if (AppHelper.allUsers != null && AppHelper.allUsers.size() > 0) {
+            String recieverId = "";
+            String chatId[] = s.split("_");
+            if (chatId != null && chatId.length > 1) {
+                if (chatId[0].matches(AppHelper.currentProfileInstance.getUserId())) {
+                    recieverId = chatId[1];
+                } else {
+                    recieverId = chatId[0];
+                }
+            }
+            for (int i = 0; i < AppHelper.allUsers.size(); i++) {
+                if (recieverId.matches(AppHelper.allUsers.get(i).getId())) {
+                    documentSnapshot = AppHelper.allUsers.get(i);
+                    profile = documentSnapshot.toObject(Profile.class);
+                    return profile;
+                }
+            }
+        }
+        return profile;
+    }
+
     @Override
     public int getItemCount() {
         return chat.size();
@@ -62,10 +102,14 @@ public class ChatListsAdapter extends RecyclerView.Adapter<ChatListsAdapter.View
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         MaterialCardView chatsRow;
+        TextView chatDesc;
+        CircleImageView profileImage;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             chatsRow = itemView.findViewById(R.id.chats_row);
+            chatDesc = itemView.findViewById(R.id.chat_desc);
+            profileImage = itemView.findViewById(R.id.profile_photo);
         }
     }
 }

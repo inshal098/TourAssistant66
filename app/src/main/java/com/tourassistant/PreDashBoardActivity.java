@@ -2,12 +2,22 @@ package com.tourassistant;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -24,22 +34,31 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
+import com.tourassistant.coderoids.helpers.PermissionHelper;
+import com.tourassistant.coderoids.helpers.RuntimePermissionsActivity;
 import com.tourassistant.coderoids.home.DashboardActivity;
 import com.tourassistant.coderoids.home.fragments.FilterPublicTrips;
+import com.tourassistant.coderoids.interfaces.LoginHelperInterface;
 import com.tourassistant.coderoids.interfaces.RequestCompletionListener;
 import com.tourassistant.coderoids.models.Profile;
+import com.tourassistant.coderoids.services.LocationService;
+import com.tourassistant.coderoids.services.LocationThread;
+import com.tourassistant.coderoids.starttrip.StartTrip;
 
 import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PreDashBoardActivity extends AppCompatActivity implements RequestCompletionListener {
+public class PreDashBoardActivity extends RuntimePermissionsActivity implements RequestCompletionListener , LoginHelperInterface {
     ProgressDialog progressDialog;
     RequestCompletionListener requestCompletionListener;
     FirebaseFirestore rootRef;
     FirebaseUser users;
     Button error;
+    PermissionHelper loginProcessHelper;
+    private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +79,51 @@ public class PreDashBoardActivity extends AppCompatActivity implements RequestCo
             }
         });
         handleState();
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        assert manager != null;
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void startLocationService() {
+        boolean isLocationServiceRunning = isServiceRunning(LocationService.class);
+        if (isLocationServiceRunning ) {
+            stopLocationService();
+        }
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                try {
+                    LocationThread locationThread = new LocationThread(PreDashBoardActivity.this,"LocationService");
+                    locationThread.start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 3000);
+        LocationService.shouldContinueRunnable = true;
+    }
+
+    public void stopLocationService() {
+        boolean isLocationServiceRunning = isServiceRunning(LocationService.class);
+        if (isLocationServiceRunning) {
+            stopService(new Intent(this, LocationService.class));
+            if(LocationThread.t != null){
+                LocationThread.t.interrupt();
+                LocationThread.t = null;
+            }
+        }
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode) {
+        requestCurrentLocation();
     }
 
     private void handleState(){
@@ -94,9 +158,12 @@ public class PreDashBoardActivity extends AppCompatActivity implements RequestCo
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isComplete()) {
                     List<DocumentSnapshot> publicTrips = task.getResult().getDocuments();
-                    FilterPublicTrips filterPublicTrips = new FilterPublicTrips(PreDashBoardActivity.this, publicTrips, requestCompletionListener);
-                    AppHelper.filteredTrips = new ArrayList<>();
-                    filterPublicTrips.filteredTrips();
+                    if(publicTrips.size()>0) {
+                        FilterPublicTrips filterPublicTrips = new FilterPublicTrips(PreDashBoardActivity.this, publicTrips, requestCompletionListener);
+                        AppHelper.filteredTrips = new ArrayList<>();
+                        filterPublicTrips.filteredTrips();
+                    } else
+                        requestCompletionListener.onListFilteredCompletion(false);
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -124,9 +191,9 @@ public class PreDashBoardActivity extends AppCompatActivity implements RequestCo
                         DocumentSnapshot documentSnapshot = allUsers.get(i);
                         if (!users.getUid().matches(documentSnapshot.getId())) {
                             AppHelper.allUsers.add(documentSnapshot);
-                            requestCompletionListener.onAllUsersCompletion(true);
                         }
                     }
+                    requestCompletionListener.onAllUsersCompletion(true);
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -140,35 +207,35 @@ public class PreDashBoardActivity extends AppCompatActivity implements RequestCo
     @Override
     public void onAllUsersCompletion(boolean status) {
         if (status) {
-            rootRef.collection("Users").document(users.getUid()).collection("FriendRequestSent").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                    if (task.isComplete()) {
-                        List<DocumentSnapshot> allSentRequest = task.getResult().getDocuments();
-                        List<DocumentSnapshot> newAllUser = new ArrayList<>();
-                        for (int i = 0; i < allSentRequest.size(); i++) {
-                            DocumentSnapshot documentSnapshot = allSentRequest.get(i);
-                            String userId = documentSnapshot.getString("userFirestoreIdReceiver");
-                            if (userId != null) {
-                                for (int j = 0; j < AppHelper.allUsers.size(); j++) {
-                                    DocumentSnapshot documentSnapshot2 = AppHelper.allUsers.get(j);
-                                    if (documentSnapshot2.getId() != null) {
-                                        String usersId = documentSnapshot2.getId();
-                                        if (!userId.matches(usersId)) {
-                                            newAllUser.add(documentSnapshot2);
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-                        if (newAllUser.size() > 0) {
-                            AppHelper.allUsers = newAllUser;
-                        }
-                        requestCompletionListener.onAllUsersCompletion(false);
-                    }
-                }
-            });
+            requestCompletionListener.onAllUsersCompletion(false);
+//            rootRef.collection("Users").document(users.getUid()).collection("FriendRequestSent").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                @Override
+//                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                    if (task.isComplete()) {
+//                        List<DocumentSnapshot> allSentRequest = task.getResult().getDocuments();
+//                        List<DocumentSnapshot> newAllUser = new ArrayList<>();
+////                        for (int i = 0; i < allSentRequest.size(); i++) {
+////                            DocumentSnapshot documentSnapshot = allSentRequest.get(i);
+////                            String userId = documentSnapshot.getString("userFirestoreIdReceiver");
+////                            if (userId != null) {
+////                                for (int j = 0; j < AppHelper.allUsers.size(); j++) {
+////                                    DocumentSnapshot documentSnapshot2 = AppHelper.allUsers.get(j);
+////                                    if (documentSnapshot2.getId() != null) {
+////                                        String usersId = documentSnapshot2.getId();
+////                                        if (!userId.matches(usersId)) {
+////                                            newAllUser.add(documentSnapshot2);
+////                                        }
+////                                    }
+////                                }
+////                            }
+////                        }
+////                        if (newAllUser.size() > 0) {
+////                            AppHelper.allUsers = newAllUser;
+////                        }
+//                        requestCompletionListener.onAllUsersCompletion(false);
+//                    }
+//                }
+//            });
         } else {
             if (AppHelper.currentProfileInstance != null) {
                 rootRef.collection("Users").document(users.getUid()).collection("Friends").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -177,40 +244,118 @@ public class PreDashBoardActivity extends AppCompatActivity implements RequestCo
                         if (task.isComplete()) {
                             List<DocumentSnapshot> friendsList = task.getResult().getDocuments();
                             AppHelper.allFriends = friendsList;
-                            List<DocumentSnapshot> newAllUser = new ArrayList<>();
-                            for (int i = 0; i < friendsList.size(); i++) {
-                                DocumentSnapshot documentSnapshot = friendsList.get(i);
-                                String userId = documentSnapshot.getString("userFirestoreIdReceiver");
-                                if (userId.matches(AppHelper.currentProfileInstance.getUserId())) {
-                                    userId = documentSnapshot.getString("userFirestoreIdSender");
-                                }
-                                for (int j = 0; j < AppHelper.allUsers.size(); j++) {
-                                    DocumentSnapshot documentSnapshot2 = AppHelper.allUsers.get(j);
-                                    String usersId = documentSnapshot2.getId();
-                                    if (!userId.matches(usersId)) {
-                                        newAllUser.add(documentSnapshot2);
-                                    }
-                                }
-
-                            }
+//                            List<DocumentSnapshot> newAllUser = new ArrayList<>();
+//                            for (int i = 0; i < friendsList.size(); i++) {
+//                                DocumentSnapshot documentSnapshot = friendsList.get(i);
+//                                String userId = documentSnapshot.getString("userFirestoreIdReceiver");
+//                                if (userId.matches(AppHelper.currentProfileInstance.getUserId())) {
+//                                    userId = documentSnapshot.getString("userFirestoreIdSender");
+//                                }
+//                                for (int j = 0; j < AppHelper.allUsers.size(); j++) {
+//                                    DocumentSnapshot documentSnapshot2 = AppHelper.allUsers.get(j);
+//                                    String usersId = documentSnapshot2.getId();
+//                                    if (!userId.matches(usersId)) {
+//                                        newAllUser.add(documentSnapshot2);
+//                                    }
+//                                }
+//
+//                            }
                             DocumentReference uidRef4 = rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId());
                             uidRef4.update("followers", AppHelper.allFriends.size() + "");
                             uidRef4.update("following", AppHelper.allFriends.size() + "");
-                            if (newAllUser.size() > 0) {
-                                AppHelper.allUsers = newAllUser;
-                            }
+//                            if (newAllUser.size() > 0) {
+//                                AppHelper.allUsers = newAllUser;
+//                            }
                             progressDialog.dismiss();
-                            startActivity(new Intent(PreDashBoardActivity.this, DashboardActivity.class));
-                            finish();
+                            loginProcessHelper = new PermissionHelper(PreDashBoardActivity.this);
+                            if(!loginProcessHelper.checkGpsStatus()){
+                                loginProcessHelper.askGPSPermission();
+                            } else
+                                PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
+                                        , loginProcessHelper.REQUEST_PERMISSIONS);
+
                         }
                     }
                 });
             } else {
                 progressDialog.dismiss();
-                startActivity(new Intent(PreDashBoardActivity.this, DashboardActivity.class));
-                finish();
+                PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
+                        , loginProcessHelper.REQUEST_PERMISSIONS);
             }
         }
 
+    }
+
+    @Override
+    public void onPrivacyPolicy(String state) {
+        PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
+                , loginProcessHelper.REQUEST_PERMISSIONS);
+    }
+
+
+    private void requestCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED) {
+            startLocationService();
+            startActivity(new Intent(PreDashBoardActivity.this, DashboardActivity.class));
+            finish();
+        } else {
+            // TODO: Request fine location permission
+            checkLocationPermission();
+            Log.d("Permission", "Request fine location permission.");
+        }
+    }
+
+
+    public boolean checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Location Permission")
+                        .setMessage("Please Provide Location Permission")
+                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(PreDashBoardActivity.this,
+                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
+                            }
+                        })
+                        .create()
+                        .show();
+
+
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    requestCurrentLocation();
+                } else {
+                }
+                return;
+            }
+
+        }
     }
 }

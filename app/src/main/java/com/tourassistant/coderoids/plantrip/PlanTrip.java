@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -30,6 +31,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Source;
+import com.tourassistant.coderoids.BaseActivity;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.appdb.AppDatabase;
 import com.tourassistant.coderoids.appdb.DatabaseClient;
@@ -41,14 +43,14 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class PlanTrip extends AppCompatActivity {
+public class PlanTrip extends BaseActivity {
 
     private TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_plan_trip);
+        setContentView(getLayoutResourceId());
         ImageButton ibCross = findViewById(R.id.ib_cross);
         Button ibCreateTrip = findViewById(R.id.create_trip);
         TextInputEditText etTripName = findViewById(R.id.et_name_trip);
@@ -71,6 +73,11 @@ public class PlanTrip extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_plan_trip;
     }
 
     private void saveTrip(String tripName) {
@@ -104,6 +111,21 @@ public class PlanTrip extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        return false;
+    }
+
+    @Override
+    public void RequestFinished(String fragmentName, String apiName, String responseString) {
+
+    }
+
+    @Override
+    public void RequestSecureFinished(String fragmentName, String apiName, String responseString) {
 
     }
 }

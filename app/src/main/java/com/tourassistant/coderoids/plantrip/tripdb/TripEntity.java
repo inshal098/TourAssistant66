@@ -64,6 +64,9 @@ public class TripEntity implements Serializable {
     @ColumnInfo(name = "joinTripRequests")
     private String joinTripRequests;
 
+    @ColumnInfo(name = "tripLocationTracking")
+    private String tripLocationTracking;
+
     public long getId() {
         return id;
     }
@@ -198,5 +201,13 @@ public class TripEntity implements Serializable {
 
     public void setJoinTripRequests(String joinTripRequests) {
         this.joinTripRequests = joinTripRequests;
+    }
+
+    public String getTripLocationTracking() {
+        return tripLocationTracking;
+    }
+
+    public void setTripLocationTracking(String tripLocationTracking) {
+        this.tripLocationTracking = tripLocationTracking;
     }
 }

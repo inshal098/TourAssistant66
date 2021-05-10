@@ -34,6 +34,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.maps.DirectionsApi;
 import com.google.maps.DirectionsApiRequest;
@@ -46,6 +49,7 @@ import com.google.maps.model.EncodedPolyline;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.helpers.DirectionsJSONParser;
+import com.tourassistant.coderoids.helpers.LocationHelper;
 import com.tourassistant.coderoids.helpers.PermissionHelper;
 import com.tourassistant.coderoids.helpers.RuntimePermissionsActivity;
 import com.tourassistant.coderoids.interfaces.LoginHelperInterface;
@@ -78,44 +82,53 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
     LatLng currentLocation;
     LatLng destination;
     MarkerOptions marker, marker2;
-    Button startNavigation;
+    Button startNavigation ,foreCastTrip;
     ImageView currentWeatherIcon;
     ImageView destWeatherIcon;
-    PermissionHelper loginProcessHelper;
-
+    LocationHelper locationManager = null;
+    Double latitude = 0.0;
+    Double longitude = 0.0;
+    SharedPreferences.Editor editorLogin;
+    SharedPreferences prefLogin;
+    ExtendedFloatingActionButton hazardFabBut;
     @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_trip);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        LocationManager locationManager = (LocationManager) getSystemService(
-                Context.LOCATION_SERVICE);
-        AppHelper.location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        tvDistanceDuration = (TextView) findViewById(R.id.tv_distance_time);
+        locationManager = LocationHelper.getInstance();
+        latitude = Double.parseDouble(locationManager.getLatitude());
+        longitude = Double.parseDouble(locationManager.getLongitude());
+        tvDistanceDuration = findViewById(R.id.tv_distance_time);
 
-        cityCurrent = (TextView) findViewById(R.id.city_field);
-        updatedCurrentField = (TextView) findViewById(R.id.updated_field);
+        cityCurrent =  findViewById(R.id.city_field);
+        foreCastTrip =  findViewById(R.id.forecast_trip);
+        updatedCurrentField = findViewById(R.id.updated_field);
         currentWeatherIcon =  findViewById(R.id.weather_icon);
-        currentTemperatureField = (TextView) findViewById(R.id.current_temperature_field);
-        detailsField = (TextView) findViewById(R.id.details_field);
+        currentTemperatureField =  findViewById(R.id.current_temperature_field);
+        detailsField =  findViewById(R.id.details_field);
 
-        cityDest = (TextView) findViewById(R.id.city_field_dest);
-        updatedDestField = (TextView) findViewById(R.id.updated_field_dest);
+        cityDest =  findViewById(R.id.city_field_dest);
+        updatedDestField = findViewById(R.id.updated_field_dest);
         destWeatherIcon =  findViewById(R.id.weather_icon_dest);
-        destTemperatureField = (TextView) findViewById(R.id.current_temperature_field_dest);
-        detailsFieldDest = (TextView) findViewById(R.id.details_field_dest);
-        loginProcessHelper = new PermissionHelper(StartTrip.this);
-        if(!loginProcessHelper.checkGpsStatus()){
-            loginProcessHelper.askGPSPermission();
-        } else
-            StartTrip.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                    , loginProcessHelper.REQUEST_PERMISSIONS);
+        destTemperatureField =  findViewById(R.id.current_temperature_field_dest);
+        detailsFieldDest =findViewById(R.id.details_field_dest);
+        hazardFabBut = findViewById(R.id.hazard_fab);
 
         startNavigation = findViewById(R.id.start_nav);
         // Initializing
         markerPoints = new ArrayList<LatLng>();
-
+        prefLogin = getSharedPreferences("logindata", Context.MODE_PRIVATE);
+        editorLogin = prefLogin.edit();
+        if(AppHelper.tripEntityList.getFirebaseUserId().matches(AppHelper.currentProfileInstance.getUserId())) {
+            editorLogin.putString("isTripInProgress","1").apply();
+            foreCastTrip.setVisibility(View.VISIBLE);
+            hazardFabBut.setVisibility(View.GONE);
+        } else {
+            foreCastTrip.setVisibility(View.GONE);
+            hazardFabBut.setVisibility(View.VISIBLE);
+        }
         // Getting reference to SupportMapFragment of the activity_main
         SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if (map == null) {
@@ -137,6 +150,30 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
             }
         });
 
+        foreCastTrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            startActivity(new Intent(StartTrip.this,ForecastTripActivity.class));
+            }
+        });
+
+        hazardFabBut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(StartTrip.this,ReportHazard.class));
+
+            }
+        });
+        updateFirebaseDb();
+    }
+
+    private void updateFirebaseDb() {
+        if(AppHelper.tripEntityList.getFirebaseUserId().matches(AppHelper.currentProfileInstance.getUserId())) {
+            String tripId = AppHelper.tripEntityList.getFirebaseId();
+            FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+            DocumentReference uidRefPublic = rootRef.collection("PublicTrips").document(tripId);
+            uidRefPublic.update("tripLocationTracking", "1");
+        }
     }
 
     @Override
@@ -209,8 +246,8 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
         );
 
         new WeatherManager(getResources().getString(R.string.weather_forecast_id)).getCurrentWeatherByCoordinates(
-                AppHelper.location.getLatitude(), // latitude
-                AppHelper.location.getLongitude(), // longitude
+               latitude, // latitude
+                longitude, // longitude
                 new WeatherManager.CurrentWeatherHandler() {
                     @Override
                     public void onReceivedCurrentWeather(WeatherManager manager, Weather weather) {
@@ -254,8 +291,8 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
         map.getUiSettings().setCompassEnabled(true);
         map.getUiSettings().setRotateGesturesEnabled(true);
         map.getUiSettings().setZoomGesturesEnabled(true);
-        currentLocation = new LatLng(AppHelper.location.getLatitude(), AppHelper.location.getLongitude());
-        destination = AppHelper.tripRoomPlace.getLatLng();
+        currentLocation = new LatLng(latitude, longitude);
+        destination = AppHelper.tripRoomPlace.get(0).getLatLng();
 
         marker = new MarkerOptions().position(currentLocation).title("Address");
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
@@ -274,7 +311,7 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 8));
         // addMarker(currentLocation,dest);
         CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(AppHelper.location.getLatitude(), AppHelper.location.getLongitude())).zoom(15).build();
+                .target(new LatLng(latitude, longitude)).zoom(15).build();
         map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,width,height,padding));
         addMarker();
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {

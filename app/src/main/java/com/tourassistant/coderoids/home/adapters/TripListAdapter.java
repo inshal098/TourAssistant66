@@ -34,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHolder> {
@@ -76,88 +77,95 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
         try {
-            rootRef.collection("PublicTrips").document(tripData.get(position).getId()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+
+            rootRef.collection("Trips")
+                    .document(AppHelper.currentProfileInstance.getUserId())
+                    .collection("UserTrips").document((tripData.get(position).getId()))
+                    .addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                     TripEntity tripEntity = value.toObject(TripEntity.class);
-                    if ((tripEntity.getJoinTripRequests() != null && !tripEntity.getJoinTripRequests().matches("null") && !tripEntity.getJoinTripRequests().matches(""))) {
-                        try {
-                            tripRequestArray = new JSONArray(tripEntity.getJoinTripRequests());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        viewHolder.requests.setText("Request (" + tripRequestArray.length() + ")");
-                    }
-                    viewHolder.tvTripName.setText("Trip Name : " + tripEntity.getTripTitle());
-                    if (tripEntity.getStartDate() != null) {
-                        viewHolder.tvStartDate.setText("Starting Date : " + tripEntity.getStartDate());
-                    } else
-                        viewHolder.tvStartDate.setText("Starting Date : -");
-
-                    viewHolder.btnEditTrip.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            AppHelper.tripEntityList = tripEntity;
-                            Navigation.findNavController(v).navigate(R.id.editTripFragment);
-                        }
-                    });
-
-                    viewHolder.btnInviteFrients.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            AppHelper.tripEntityList = tripEntity;
-                            Navigation.findNavController(v).navigate(R.id.inviteFragment);
-                        }
-                    });
-
-                    viewHolder.btnShare.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent sendIntent = new Intent();
-                            sendIntent.setAction(Intent.ACTION_SEND);
-                            sendIntent.putExtra(Intent.EXTRA_TEXT,
-                                    "Hey Checkout This New Trip im Planning ,Join Me Know" + BuildConfig.APPLICATION_ID);
-                            sendIntent.setType("text/plain");
-                            context.startActivity(sendIntent);
-                        }
-                    });
-                    viewHolder.requests.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (tripEntity.getFirebaseUserId().matches(AppHelper.currentProfileInstance.getUserId())) {
-
-                                if (tripRequestArray.length() > 0) {
-                                    AppHelper.tripEntityList = tripEntity;
-                                    Navigation.findNavController(v).navigate(R.id.joinTripRequestFragment);
-                                    try {
-                                        JSONArray jsonArray = new JSONArray();
-                                        JSONObject jsonObject = new JSONObject();
-                                        jsonObject.put("id" ,AppHelper.tripEntityList.getFirebaseId());
-                                        jsonObject.put("message" ,"Your Request To Join a Trip is Approved");
-                                        jsonArray.put(jsonObject);
-                                        NotificationPublisher notificationPublisher = new NotificationPublisher(context
-                                                ,"PublicTrips" ,jsonArray+"",AppHelper.tripEntityList.getFirebaseUserId());
-                                        notificationPublisher.publishNotification();
-                                    }catch (JSONException ex){
-                                        ex.printStackTrace();
-                                    }
-
-                                }
-                            } else {
-                                Toast.makeText(context, "Only Admin can Approve the Requests", Toast.LENGTH_SHORT).show();
+                    if (tripEntity != null) {
+                        if ((tripEntity.getJoinTripRequests() != null && !tripEntity.getJoinTripRequests().matches("null") && !tripEntity.getJoinTripRequests().matches(""))) {
+                            try {
+                                tripRequestArray = new JSONArray(tripEntity.getJoinTripRequests());
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
+                            viewHolder.requests.setText("Request (" + tripRequestArray.length() + ")");
                         }
-                    });
+                        viewHolder.tvTripName.setText("Trip Name : " + tripEntity.getTripTitle());
+                        if (tripEntity.getStartDate() != null) {
+                            viewHolder.tvStartDate.setText("Starting Date : " + tripEntity.getStartDate());
+                        } else
+                            viewHolder.tvStartDate.setText("Starting Date : -");
+
+                        viewHolder.btnEditTrip.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                AppHelper.tripEntityList = tripEntity;
+                                Navigation.findNavController(v).navigate(R.id.editTripFragment);
+                            }
+                        });
+
+                        viewHolder.btnInviteFrients.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                AppHelper.tripEntityList = tripEntity;
+                                Navigation.findNavController(v).navigate(R.id.inviteFragment);
+                            }
+                        });
+
+                        viewHolder.btnShare.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent sendIntent = new Intent();
+                                sendIntent.setAction(Intent.ACTION_SEND);
+                                sendIntent.putExtra(Intent.EXTRA_TEXT,
+                                        "Hey Checkout This New Trip im Planning ,Join Me Know" + BuildConfig.APPLICATION_ID);
+                                sendIntent.setType("text/plain");
+                                context.startActivity(sendIntent);
+                            }
+                        });
+                        viewHolder.requests.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (tripEntity.getFirebaseUserId().matches(AppHelper.currentProfileInstance.getUserId())) {
+
+                                    if (tripRequestArray.length() > 0) {
+                                        AppHelper.tripEntityList = tripEntity;
+                                        Navigation.findNavController(v).navigate(R.id.joinTripRequestFragment);
+                                        try {
+//                                        JSONArray jsonArray = new JSONArray();
+//                                        JSONObject jsonObject = new JSONObject();
+//                                        jsonObject.put("id" ,AppHelper.tripEntityList.getFirebaseId());
+//                                        jsonObject.put("message" ,"Your Request To Join a Trip is Approved");
+//                                        jsonArray.put(jsonObject);
+//                                        NotificationPublisher notificationPublisher = new NotificationPublisher(context
+//                                                ,"PublicTrips" ,jsonArray+"",AppHelper.tripEntityList.getFirebaseUserId());
+//                                        notificationPublisher.publishNotification();
+                                        } catch (Exception ex) {
+                                            ex.printStackTrace();
+                                        }
+
+                                    }
+                                } else {
+                                    Toast.makeText(context, "Only Admin can Approve the Requests", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
 
 
-                    viewHolder.btnTripRoom.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            AppHelper.tripEntityList = tripEntity;
-                            Navigation.findNavController(v).navigate(R.id.tripRoomFragment);
-                        }
-                    });
+                        viewHolder.btnTripRoom.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                AppHelper.tripEntityList = tripEntity;
+                                AppHelper.tripRoomPlace = new ArrayList<>();
+                                Navigation.findNavController(v).navigate(R.id.tripRoomFragment);
+                            }
+                        });
 
+                    }
                 }
             });
 

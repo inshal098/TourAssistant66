@@ -16,10 +16,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
+import com.tourassistant.coderoids.helpers.NotificationPublisher;
 import com.tourassistant.coderoids.interfaces.onClickListner;
 import com.tourassistant.coderoids.models.FriendRequestModel;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -90,6 +93,19 @@ public class FollowRequestAdapter extends RecyclerView.Adapter<FollowRequestAdap
                     //Deleting Entry from Friend Requests Received
                     DocumentReference uidRef3 = rootRef.collection("Users").document(friendRequestSenderId).collection("FriendRequestSent").document(friendRequestId);
                     uidRef3.delete();
+
+                    JSONArray jsonArray = new JSONArray();
+                    JSONObject notiObjNew = new JSONObject();
+                    try {
+                        notiObjNew.put("id","0");
+                        notiObjNew.put("friendRequesSenderId", currentID );
+                        notiObjNew.put("message", "Your Follow Request is Approved");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    jsonArray.put(notiObjNew);
+                    NotificationPublisher notificationPublisher = new NotificationPublisher(context, "FollowRequestAccept", jsonArray + "", friendRequestSenderId);
+                    notificationPublisher.publishNotification();
                     onClickListner.onClick(finalPosition,null);
                 }
             });

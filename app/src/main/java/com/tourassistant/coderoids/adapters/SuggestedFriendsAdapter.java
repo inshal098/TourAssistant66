@@ -22,6 +22,7 @@ import com.tourassistant.coderoids.models.FriendRequestModel;
 import com.tourassistant.coderoids.models.NotificationPublish;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -75,6 +76,18 @@ public class SuggestedFriendsAdapter extends RecyclerView.Adapter<SuggestedFrien
                         uidRef.set(friendRequestModel);
                         DocumentReference uidRef2 = rootRef.collection("Users").document(currentID).collection("FriendRequestSent").document(getRequestId);
                         uidRef2.set(friendRequestModel);
+                        JSONArray jsonArray = new JSONArray();
+                        JSONObject notiObjNew = new JSONObject();
+                        try {
+                            notiObjNew.put("id", AppHelper.tripEntityList.getFirebaseId());
+                            notiObjNew.put("friendRequesSenderId", currentID );
+                            notiObjNew.put("message", "You Have Received A Follow Request");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        jsonArray.put(notiObjNew);
+                        NotificationPublisher notificationPublisher = new NotificationPublisher(context, "FollowRequest", jsonArray + "", uid);
+                        notificationPublisher.publishNotification();
                         onClickListner.onClick(finalPosition,null);
 
                     }
