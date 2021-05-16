@@ -5,6 +5,17 @@ public class ChatModel {
     private String time;
     private String id;
     private String sentBy;
+    private String type;
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getMessage() {
         return message;
     }
@@ -35,5 +46,13 @@ public class ChatModel {
 
     public void setSentBy(String sentBy) {
         this.sentBy = sentBy;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

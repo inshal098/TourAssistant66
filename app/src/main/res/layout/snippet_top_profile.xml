@@ -113,6 +113,30 @@
             android:maxLines="1"
             android:textAlignment="center"
             android:background="@drawable/grey_border"/>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/sw_tracking_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:checked="false"
+            android:padding="5dp"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textEditProfile" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:padding="10dp"
+            android:id="@+id/tracking_state_tv"
+            android:textColor="@color/white"
+            android:background="@color/red"
+            android:text="Live Location Tracking is Disabled"
+            app:layout_constraintTop_toBottomOf="@+id/sw_tracking_state" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

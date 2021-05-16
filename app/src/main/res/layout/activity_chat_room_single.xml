@@ -9,7 +9,7 @@
     tools:context=".chatmodule.ChatRoomSingle">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/chatTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
@@ -26,18 +26,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/relativeLayout_message"
-        android:layout_below="@+id/textView">
+        android:layout_below="@+id/chatTitle">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_messages_rec"
             android:layout_width="200dp"
             android:layout_gravity="top"
+            android:visibility="gone"
             android:layout_margin="3dp"
             android:layout_height="wrap_content" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_messages_sender"
-            android:layout_width="200dp"
+            android:layout_width="match_parent"
             android:layout_gravity="bottom"
             android:layout_margin="3dp"
             android:layout_height="wrap_content" />

@@ -22,7 +22,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".starttrip.ReportHazard"></activity>
+        <activity android:name=".profilefriends.FriendsProfileActivity"></activity>
+        <activity android:name=".starttrip.ReplanTrip" />
+        <activity android:name=".starttrip.ReportHazard" />
         <activity android:name=".starttrip.ForecastTripActivity" />
         <activity
             android:name=".chatmodule.ChatRoomSingle"

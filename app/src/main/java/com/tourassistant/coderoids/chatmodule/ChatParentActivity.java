@@ -34,6 +34,10 @@ import com.tourassistant.coderoids.chatmodule.model.ChatModel;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.interfaces.onClickListner;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,18 +53,18 @@ public class ChatParentActivity extends AppCompatActivity implements onClickList
     AlertDialog alertDialog;
     DatabaseReference mDatabase;
     ArrayList<String> allChatsIds = new ArrayList<>();
-
+    String type = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_parent);
+        type = getIntent().getStringExtra("type");
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         onClickListner = (onClickListner) this;
         newMessage = findViewById(R.id.add_message);
         chatList = findViewById(R.id.chat_list);
         rvManRec = new LinearLayoutManager(this);
         rvManRec.setOrientation(LinearLayoutManager.VERTICAL);
-        manageFriends();
 
         newMessage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,7 +74,43 @@ public class ChatParentActivity extends AppCompatActivity implements onClickList
                 }
             }
         });
+        manageFriends();
         fetchAllUserChats();
+        if(type == null && AppHelper.currentProfileInstance.getUserId().matches(AppHelper.tripEntityList.getFirebaseUserId()))
+            manageGroupChat();
+
+
+    }
+
+    private void manageGroupChat() {
+        try {
+            if(AppHelper.allUsers.size()>0) {
+                if (!AppHelper.tripEntityList.getJoinTripRequests().matches("") && AppHelper.tripEntityList.getJoinTripRequests() != null) {
+                    JSONArray jsonArray = new JSONArray(AppHelper.tripEntityList.getJoinTripRequests());
+                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+                    for (int i = 0; i < AppHelper.allUsers.size(); i++) {
+                        for (int j = 0; j <jsonArray.length(); j++){
+                            String userID = "";
+                            JSONObject jsonObject = jsonArray.getJSONObject(j);
+                            userID = jsonObject.getString("userId");
+                            if(userID.matches(AppHelper.allUsers.get(i).getId()) && !currentUser.getUid().matches(AppHelper.allUsers.get(i).getId())){
+                                if(AppHelper.groupChatRecieversInstance == null)
+                                    AppHelper.groupChatRecieversInstance = new ArrayList<>();
+                                AppHelper.groupChatRecieversInstance.add(AppHelper.allUsers.get(i));
+                            }
+                        }
+                    }
+                    AppHelper.currentChatRecieverInstance = null;
+                    startActivity(new Intent(ChatParentActivity.this,ChatRoomSingle.class));
+                    finish();
+
+                }
+            }
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
+
     }
 
     private void fetchAllUserChats() {

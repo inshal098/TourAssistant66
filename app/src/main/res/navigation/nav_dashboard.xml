@@ -50,4 +50,8 @@
         android:id="@+id/joinTripRequestFragment"
         android:name="com.tourassistant.coderoids.home.fragments.JoinTripRequestFragment"
         tools:layout="@layout/fragment_join_trip_request" />
+    <fragment
+        android:id="@+id/news_feed"
+        android:name="com.tourassistant.coderoids.home.fragments.NewsFeed"
+        tools:layout="@layout/fragment_news_feed" />
 </navigation>

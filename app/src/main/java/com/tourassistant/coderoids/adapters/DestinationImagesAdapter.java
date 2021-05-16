@@ -20,6 +20,8 @@ import com.google.android.libraries.places.api.net.FetchPhotoRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.tourassistant.coderoids.R;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.util.List;
@@ -29,9 +31,9 @@ public class DestinationImagesAdapter extends RecyclerView.Adapter<DestinationIm
     PlacesClient placesClient;
     LayoutInflater inflter;
     List<List<PhotoMetadata>> metadata;
-    String[] destinationStringArr;
+    JSONArray destinationStringArr;
 
-    public DestinationImagesAdapter(Context applicationContext, PlacesClient placesClient, List<List<PhotoMetadata>> metadata, String[] destinationStringArr) {
+    public DestinationImagesAdapter(Context applicationContext, PlacesClient placesClient, List<List<PhotoMetadata>> metadata, JSONArray destinationStringArr) {
         this.context = applicationContext;
         this.placesClient = placesClient;
         this.metadata = metadata;
@@ -54,7 +56,8 @@ public class DestinationImagesAdapter extends RecyclerView.Adapter<DestinationIm
             LinearLayoutManager rvMang = new LinearLayoutManager(context);
             rvMang.setOrientation(LinearLayoutManager.HORIZONTAL);
             try {
-                viewHolder.title.setText("Images Gallery of : " +destinationStringArr[position]);
+                JSONObject jsonObject = destinationStringArr.getJSONObject(position);
+                viewHolder.title.setText("Images Gallery of : " +jsonObject.getString("destName"));
                 ImagesAdapter imagesAdapter = new ImagesAdapter(context,placesClient,metadata.get(position));
                 viewHolder.ivPlaceImage.setAdapter(imagesAdapter);
                 viewHolder.ivPlaceImage.setLayoutManager(rvMang);

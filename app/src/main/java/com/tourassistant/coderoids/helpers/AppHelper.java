@@ -66,6 +66,7 @@ public class AppHelper {
     public static Place selectedPlace;
     public static ArrayList<Place> tripRoomPlace;
     public static DocumentSnapshot currentChatRecieverInstance;
+    public static ArrayList<DocumentSnapshot> groupChatRecieversInstance;
     public static String currentChatThreadId;
     public static String inProgressTripId;
     private static AppHelper instance = null;

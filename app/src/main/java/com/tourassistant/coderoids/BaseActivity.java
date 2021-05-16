@@ -37,6 +37,7 @@ import com.tourassistant.coderoids.home.fragments.HomeFragment;
 import com.tourassistant.coderoids.home.fragments.TripRoomFragment;
 import com.tourassistant.coderoids.interfaces.RequestInterface;
 import com.tourassistant.coderoids.models.FireBaseRegistration;
+import com.tourassistant.coderoids.plantrip.tripdb.TripEntity;
 import com.tourassistant.coderoids.services.LocationService;
 import com.tourassistant.coderoids.services.LocationThread;
 
@@ -94,6 +95,19 @@ public abstract class BaseActivity extends AppCompatActivity implements
                             if(TripRoomFragment.instance != null){
                                 TripRoomFragment.instance.updateTripUI(AppHelper.inProgressTripId);
                             }
+                        } else if(intent.getStringExtra("notificationType").contains("TripReplanned")){
+                            Toast.makeText(context, "A Trip is Replanned", Toast.LENGTH_SHORT).show();
+                            String tripId = jsonObject.getString("id");
+                            rootRef.collection("PublicTrips").document(tripId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if(task.isSuccessful()){
+                                        AppHelper.tripEntityList  = task.getResult().toObject(TripEntity.class);
+                                        if(TripRoomFragment.instance != null)
+                                            TripRoomFragment.instance.updateTripUI(tripId);
+                                    }
+                                }
+                            });
                         }
                     }
                 } catch (JSONException ex) {

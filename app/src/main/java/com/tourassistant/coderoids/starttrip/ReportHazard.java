@@ -34,7 +34,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.textfield.TextInputEditText;
@@ -72,16 +74,22 @@ public class ReportHazard extends AppCompatActivity {
     Blob profileImageBlob = null;
     GeoPoint point;
     Button btnSignUp ,btnBack;
-    String[] SPINNERLIST = {"Land Slide", "Snow", "Road Block", "Bad Weather", "other"};
+    String[] SPINNERLIST = {"Road Trip","Beauty","Adventure","Nature","Land Slide", "Snow", "Road Block", "Bad Weather", "other"};
     TextInputEditText etName, etTripTitle, etDesctiption;
     MaterialBetterSpinner materialDesignSpinner;
     Bitmap bitmapLowRes = null;
     ConstraintLayout contentNews;
     RelativeLayout rlEmpty;
+    private PlacesClient placesClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_hazard);
+        if (!Places.isInitialized()) {
+            Places.initialize(this, this.getString(R.string.google_maps_key));
+        }
+        placesClient = Places.createClient(this);
         ivProofImages = findViewById(R.id.iv_proof_image);
         tvAddImage = findViewById(R.id.tl_images);
         tvGeoPoint = findViewById(R.id.tl_geo_point);
@@ -161,6 +169,13 @@ public class ReportHazard extends AppCompatActivity {
                         rlEmpty.setVisibility(View.VISIBLE);
                         contentNews.setVisibility(View.GONE);
                     }
+                }
+            });
+
+            rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("NewsFeed").document().set(newsFeed).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+
                 }
             });
         } else {

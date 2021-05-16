@@ -244,28 +244,9 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                         if (task.isComplete()) {
                             List<DocumentSnapshot> friendsList = task.getResult().getDocuments();
                             AppHelper.allFriends = friendsList;
-//                            List<DocumentSnapshot> newAllUser = new ArrayList<>();
-//                            for (int i = 0; i < friendsList.size(); i++) {
-//                                DocumentSnapshot documentSnapshot = friendsList.get(i);
-//                                String userId = documentSnapshot.getString("userFirestoreIdReceiver");
-//                                if (userId.matches(AppHelper.currentProfileInstance.getUserId())) {
-//                                    userId = documentSnapshot.getString("userFirestoreIdSender");
-//                                }
-//                                for (int j = 0; j < AppHelper.allUsers.size(); j++) {
-//                                    DocumentSnapshot documentSnapshot2 = AppHelper.allUsers.get(j);
-//                                    String usersId = documentSnapshot2.getId();
-//                                    if (!userId.matches(usersId)) {
-//                                        newAllUser.add(documentSnapshot2);
-//                                    }
-//                                }
-//
-//                            }
                             DocumentReference uidRef4 = rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId());
                             uidRef4.update("followers", AppHelper.allFriends.size() + "");
                             uidRef4.update("following", AppHelper.allFriends.size() + "");
-//                            if (newAllUser.size() > 0) {
-//                                AppHelper.allUsers = newAllUser;
-//                            }
                             progressDialog.dismiss();
                             loginProcessHelper = new PermissionHelper(PreDashBoardActivity.this);
                             if(!loginProcessHelper.checkGpsStatus()){

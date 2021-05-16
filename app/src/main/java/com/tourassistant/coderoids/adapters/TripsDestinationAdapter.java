@@ -23,18 +23,17 @@ import com.tourassistant.coderoids.models.PlacesModel;
 import com.tourassistant.coderoids.plantrip.PlanTrip;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
 public class TripsDestinationAdapter extends RecyclerView.Adapter<TripsDestinationAdapter.ViewHolder> {
     Context context;
-    String [] tripDestinationIds;
-    String [] tripDestinationsName;
+    JSONArray destinations;
 
-    public TripsDestinationAdapter(Context applicationContext, String[] tripDestinationIds, String[] tripDestinationsName) {
+    public TripsDestinationAdapter(Context applicationContext, JSONArray destinations) {
         this.context = applicationContext;
-        this.tripDestinationIds = tripDestinationIds;
-        this.tripDestinationsName = tripDestinationsName;
+        this.destinations = destinations;
     }
 
     @NonNull
@@ -49,8 +48,9 @@ public class TripsDestinationAdapter extends RecyclerView.Adapter<TripsDestinati
     public void onBindViewHolder(@NonNull final TripsDestinationAdapter.ViewHolder viewHolder, int position) {
         position = viewHolder.getAdapterPosition();
         try {
+            JSONObject destObj = destinations.getJSONObject(position);
             int index = position +1;
-            viewHolder.tripDestName.setText(index +" : "+tripDestinationsName[position]);
+            viewHolder.tripDestName.setText(index +" : "+destObj.getString("destName"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -58,7 +58,7 @@ public class TripsDestinationAdapter extends RecyclerView.Adapter<TripsDestinati
 
     @Override
     public int getItemCount() {
-        return tripDestinationIds.length;
+        return destinations.length();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

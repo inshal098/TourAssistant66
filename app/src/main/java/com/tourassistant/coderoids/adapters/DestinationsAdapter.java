@@ -28,6 +28,10 @@ import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.models.PlacesModel;
 import com.tourassistant.coderoids.plantrip.PlanTrip;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class DestinationsAdapter extends RecyclerView.Adapter<DestinationsAdapter.ViewHolder> {
@@ -80,15 +84,31 @@ public class DestinationsAdapter extends RecyclerView.Adapter<DestinationsAdapte
                                 if( AppHelper.tripEntityList.getDestinationId().contains(placesModel.getDestinationId())) {
                                     Toast.makeText(context, "Destination is Already Added", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    String destinationId = AppHelper.tripEntityList.getDestinationId() + "," + placesModel.getDestinationId();
-                                    AppHelper.tripEntityList.setDestinationId(destinationId);
-                                    String destinationName = AppHelper.tripEntityList.getDestination() + "," + placesModel.getDestinationName();
-                                    AppHelper.tripEntityList.setDestination(destinationName);
-                                    Navigation.findNavController(v).navigate(R.id.editTripFragment);
+                                    try {
+                                        JSONArray jsonArray = new JSONArray(AppHelper.tripEntityList.getDestinationId());
+                                        JSONObject jsonObject = new JSONObject();
+                                        jsonObject = new JSONObject();
+                                        jsonObject.put("destId",placesModel.getDestinationId());
+                                        jsonObject.put("destName",placesModel.getDestinationName());
+                                        jsonArray.put(jsonObject);
+                                        AppHelper.tripEntityList.setDestinationId(jsonArray.toString());
+                                        Navigation.findNavController(v).navigate(R.id.editTripFragment);
+                                    } catch (JSONException ex){
+                                        ex.printStackTrace();
+                                    }
                                 }
                             } else {
-                                AppHelper.tripEntityList.setDestination(placesModel.getDestinationName());
-                                AppHelper.tripEntityList.setDestinationId(placesModel.getDestinationId());
+                                try {
+                                    JSONArray jsonArray = new JSONArray();
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("destId",placesModel.getDestinationId());
+                                    jsonObject.put("destName",placesModel.getDestinationName());
+                                    jsonArray.put(jsonObject);
+                                    AppHelper.tripEntityList.setDestinationId(jsonArray+"");
+                                }catch (JSONException ex){
+                                    ex.printStackTrace();
+                                }
+                                //AppHelper.tripEntityList.setDestination(placesModel.getDestinationName());
                                 Navigation.findNavController(v).navigate(R.id.editTripFragment);
                             }
                         } else {

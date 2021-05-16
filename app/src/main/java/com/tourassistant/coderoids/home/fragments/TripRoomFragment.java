@@ -77,7 +77,6 @@ public class TripRoomFragment extends Fragment {
     LinearLayout chat;
     DestinationImagesAdapter imagesAdapter;
     List<List<PhotoMetadata>> metadata;
-    String destinationStringArr[];
     String destinationStringArrNames[];
     public static TripRoomFragment instance;
     SharedPreferences.Editor editorLogin;
@@ -247,126 +246,56 @@ public class TripRoomFragment extends Fragment {
     }
 
     private void fetchDestinationDetail(String destinationId) {
-        destinationStringArr = new String[1];
-        destinationStringArrNames = new String[1];
-        if (destinationId.contains(",")) {
-            destinationStringArr = destinationId.split(",");
-            destinationStringArrNames = AppHelper.tripEntityList.getDestination().split(",");
-        } else {
-            destinationStringArr[0] = destinationId;
-            destinationStringArrNames[0] = AppHelper.tripEntityList.getDestination();
+        try {
+            JSONArray jsonArray = new JSONArray(destinationId);
+            FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                rootRef.collection("Destinations").document(jsonObject.getString("destId")).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                        PlacesModel documentSnapshot = value.toObject(PlacesModel.class);
+                        final List<Place.Field> placeFields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS,
+                                Place.Field.LAT_LNG, Place.Field.ADDRESS_COMPONENTS,
+                                Place.Field.BUSINESS_STATUS, Place.Field.RATING, Place.Field.PHOTO_METADATAS,
+                                Place.Field.USER_RATINGS_TOTAL, Place.Field.TYPES);
+                        if (documentSnapshot.getDestinationId() != null) {
+                            final FetchPlaceRequest request = FetchPlaceRequest.newInstance(documentSnapshot.getDestinationId(), placeFields);
+                            placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
+                                Place place = response.getPlace();
+                                if (AppHelper.tripRoomPlace == null) {
+                                    AppHelper.tripRoomPlace = new ArrayList<>();
+                                }
+                                AppHelper.tripRoomPlace.add(place);
+                                if (metadata == null)
+                                    metadata = new ArrayList<>();
+                                metadata.add(place.getPhotoMetadatas());
+                                populateCurrentPlaceDetail(jsonArray);
+                                Log.i("Status", "Place found: " + place.getName());
+                            }).addOnFailureListener((exception) -> {
+                                if (exception instanceof ApiException) {
+                                    final ApiException apiException = (ApiException) exception;
+                                    Log.e("Status", "Place not found: " + exception.getMessage());
+                                    final int statusCode = apiException.getStatusCode();
+                                    // TODO: Handle error with given status code.
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        }catch (JSONException ex){
 
         }
-        FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-        for (int i = 0; i < destinationStringArr.length; i++) {
-            rootRef.collection("Destinations").document(destinationStringArr[i]).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                    PlacesModel documentSnapshot = value.toObject(PlacesModel.class);
-                    final List<Place.Field> placeFields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS,
-                            Place.Field.LAT_LNG, Place.Field.ADDRESS_COMPONENTS,
-                            Place.Field.BUSINESS_STATUS, Place.Field.RATING, Place.Field.PHOTO_METADATAS,
-                            Place.Field.USER_RATINGS_TOTAL, Place.Field.TYPES);
-                    if (documentSnapshot.getDestinationId() != null) {
-                        final FetchPlaceRequest request = FetchPlaceRequest.newInstance(documentSnapshot.getDestinationId(), placeFields);
-                        placesClient.fetchPlace(request).addOnSuccessListener((response) -> {
-                            Place place = response.getPlace();
-                            if (AppHelper.tripRoomPlace == null) {
-                                AppHelper.tripRoomPlace = new ArrayList<>();
-                            }
-                            AppHelper.tripRoomPlace.add(place);
-                            if (metadata == null)
-                                metadata = new ArrayList<>();
-                            metadata.add(place.getPhotoMetadatas());
-                            populateCurrentPlaceDetail();
-                            Log.i("Status", "Place found: " + place.getName());
-                        }).addOnFailureListener((exception) -> {
-                            if (exception instanceof ApiException) {
-                                final ApiException apiException = (ApiException) exception;
-                                Log.e("Status", "Place not found: " + exception.getMessage());
-                                final int statusCode = apiException.getStatusCode();
-                                // TODO: Handle error with given status code.
-                            }
-                        });
-                    }
-                }
-            });
-        }
+
     }
 
-    private void populateCurrentPlaceDetail() {
+    private void populateCurrentPlaceDetail(JSONArray jsonArray) {
         if (imagesAdapter == null) {
-            imagesAdapter = new DestinationImagesAdapter(getContext(), placesClient, metadata, destinationStringArrNames);
+            imagesAdapter = new DestinationImagesAdapter(getContext(), placesClient, metadata, jsonArray);
             tripImages.setAdapter(imagesAdapter);
             tripImages.setLayoutManager(linearLayoutManager);
         } else
             imagesAdapter.notifyDataSetChanged();
-    }
-
-    public void findAddress(double latitude, double longitude) {
-        try {
-            Geocoder geocoder;
-            List<Address> addresses;
-            geocoder = new Geocoder(getContext(), Locale.getDefault());
-            addresses = geocoder.getFromLocation(latitude, longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-            String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-            // etAddress.setText(address);
-            AppHelper.lastSearchAddress = address;
-            List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS,
-                    Place.Field.LAT_LNG,
-                    Place.Field.BUSINESS_STATUS, Place.Field.RATING, Place.Field.PHOTO_METADATAS,
-                    Place.Field.USER_RATINGS_TOTAL, Place.Field.TYPES);
-//            FindCurrentPlaceRequest findCurrentPlaceRequest = FindCurrentPlaceRequest.newInstance(fields);
-//            // Get the likely places - that is, the businesses and other points of interest that
-//            // are the best match for the device's current location.
-//            @SuppressWarnings("MissingPermission") final Task<FindCurrentPlaceResponse> placeResult =
-//                    placesClient.findCurrentPlace(findCurrentPlaceRequest);
-//            placeResult.addOnCompleteListener(new OnCompleteListener<FindCurrentPlaceResponse>() {
-//                @Override
-//                public void onComplete(@NonNull Task<FindCurrentPlaceResponse> task) {
-//                    if (task.isSuccessful() && task.getResult() != null) {
-//                        FindCurrentPlaceResponse likelyPlaces = task.getResult();
-//
-//                        // Set the count, handling cases where less than 5 entries are returned.
-//                        int count;
-//                        if (likelyPlaces.getPlaceLikelihoods().size() < M_MAX_ENTRIES) {
-//                            count = likelyPlaces.getPlaceLikelihoods().size();
-//
-//                        } else {
-//                            count = M_MAX_ENTRIES;
-//                        }
-//
-//                        int i = 0;
-//                        likelyPlaceNames = new String[count];
-//                        likelyPlaceAddresses = new String[count];
-//                        likelyPlaceAttributions = new List[count];
-//                        likelyPlaceLatLngs = new LatLng[count];
-//
-//                        for (PlaceLikelihood placeLikelihood : likelyPlaces.getPlaceLikelihoods()) {
-//                            // Build a list of likely places to show the user.
-//                            places.add(placeLikelihood.getPlace());
-//                            likelyPlaceNames[i] = placeLikelihood.getPlace().getName();
-//                            likelyPlaceAddresses[i] = placeLikelihood.getPlace().getAddress();
-//                            likelyPlaceAttributions[i] = placeLikelihood.getPlace()
-//                                    .getAttributions();
-//                            likelyPlaceLatLngs[i] = placeLikelihood.getPlace().getLatLng();
-//                            i++;
-//                            if (i > (count - 1)) {
-//                                break;
-//                            }
-//                        }
-//
-//                        // Show a dialog offering the user the list of likely places, and add a
-//                        // marker at the selected place.
-//                        //openPlacesDialog(googleMap);
-//                    } else {
-//                        Log.e("Ex", "Exception: %s", task.getException());
-//                    }
-//                }
-//            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 }

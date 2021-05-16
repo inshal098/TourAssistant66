@@ -22,6 +22,7 @@ import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.models.Profile;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,13 +49,20 @@ public class ChatListsAdapter extends RecyclerView.Adapter<ChatListsAdapter.View
         position = viewHolder.getAdapterPosition();
         try {
             int finalPosition = position;
-            Profile profile = fetchRecieverId(chat.get(position));
+            List<Profile> profile = fetchRecieverId(chat.get(position));
             if(profile != null) {
-                viewHolder.chatDesc.setText(profile.getDisplayName());
-                if (profile.getProfileImage() != null) {
-                    byte[] bytes = profile.getProfileImage().toBytes();
-                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    viewHolder.profileImage.setImageBitmap(bmp);
+                String membersName = "";
+                for(int i=0 ; i<profile.size(); i++) {
+                    if(membersName.matches("")) {
+                        membersName = profile.get(i).getDisplayName();
+                    } else
+                        membersName = membersName+","+profile.get(i).getDisplayName();
+                        viewHolder.chatDesc.setText(membersName);
+                    if (i==0 && profile.get(0).getProfileImage() != null) {
+                        byte[] bytes = profile.get(0).getProfileImage().toBytes();
+                        Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        viewHolder.profileImage.setImageBitmap(bmp);
+                    }
                 }
             }
             viewHolder.chatsRow.setOnClickListener(new View.OnClickListener() {
@@ -71,26 +79,38 @@ public class ChatListsAdapter extends RecyclerView.Adapter<ChatListsAdapter.View
         }
     }
 
-    private Profile fetchRecieverId(String s) {
+    private List<Profile> fetchRecieverId(String s) {
         DocumentSnapshot documentSnapshot = null;
-        Profile profile = null;
+        List<Profile> profile = new ArrayList<>();
         if (AppHelper.allUsers != null && AppHelper.allUsers.size() > 0) {
             String recieverId = "";
             String chatId[] = s.split("_");
-            if (chatId != null && chatId.length > 1) {
-                if (chatId[0].matches(AppHelper.currentProfileInstance.getUserId())) {
-                    recieverId = chatId[1];
-                } else {
-                    recieverId = chatId[0];
+            if(chatId.length > 2){
+                for(int l=0 ;l<chatId.length;l++) {
+                    recieverId =  chatId[l];
+                    for (int i = 0; i < AppHelper.allUsers.size(); i++) {
+                        if (recieverId.matches(AppHelper.allUsers.get(i).getId())) {
+                            documentSnapshot = AppHelper.allUsers.get(i);
+                            profile.add(documentSnapshot.toObject(Profile.class));
+                        }
+                    }
+                }
+            } else {
+                if (chatId != null && chatId.length > 1) {
+                    if (chatId[0].matches(AppHelper.currentProfileInstance.getUserId())) {
+                        recieverId = chatId[1];
+                    } else {
+                        recieverId = chatId[0];
+                    }
+                }
+                for (int i = 0; i < AppHelper.allUsers.size(); i++) {
+                    if (recieverId.matches(AppHelper.allUsers.get(i).getId())) {
+                        documentSnapshot = AppHelper.allUsers.get(i);
+                        profile.add(documentSnapshot.toObject(Profile.class));
+                    }
                 }
             }
-            for (int i = 0; i < AppHelper.allUsers.size(); i++) {
-                if (recieverId.matches(AppHelper.allUsers.get(i).getId())) {
-                    documentSnapshot = AppHelper.allUsers.get(i);
-                    profile = documentSnapshot.toObject(Profile.class);
-                    return profile;
-                }
-            }
+
         }
         return profile;
     }

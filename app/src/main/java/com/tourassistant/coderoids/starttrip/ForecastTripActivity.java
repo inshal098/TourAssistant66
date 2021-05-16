@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -56,6 +57,7 @@ public class ForecastTripActivity extends AppCompatActivity {
     LatLng destinationLatLng;
     TextView tvAddWeather;
     private int AUTOCOMPLETE_REQUEST_CODE = 3;
+    Button replanTrip;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,7 @@ public class ForecastTripActivity extends AppCompatActivity {
         rvWeatherForecast = findViewById(R.id.weather_forecast);
         rvNewsSection = findViewById(R.id.news_section);
         tvAddWeather = findViewById(R.id.weather_forecast_add);
+        replanTrip = findViewById(R.id.forecast_trip);
         llForecastMan = new LinearLayoutManager(getApplicationContext());
         llForecastMan.setOrientation(RecyclerView.HORIZONTAL);
 
@@ -89,6 +92,13 @@ public class ForecastTripActivity extends AppCompatActivity {
                         .setCountries(countriesArr)
                         .build(ForecastTripActivity.this);
                 startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+            }
+        });
+
+        replanTrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ForecastTripActivity.this,ReplanTrip.class));
             }
         });
     }

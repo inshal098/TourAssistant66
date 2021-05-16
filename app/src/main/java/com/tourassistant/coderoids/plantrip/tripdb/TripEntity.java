@@ -211,3 +211,4 @@ public class TripEntity implements Serializable {
         this.tripLocationTracking = tripLocationTracking;
     }
 }
+

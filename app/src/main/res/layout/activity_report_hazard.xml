@@ -14,6 +14,7 @@
         <RelativeLayout
             android:id="@+id/emtyView"
             android:layout_width="match_parent"
+            android:visibility="gone"
             android:layout_height="match_parent">
 
             <ImageView
@@ -51,7 +52,7 @@
             android:id="@+id/content_news"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_heading_top"
@@ -61,7 +62,7 @@
                 android:fontFamily="@font/arimo_bold"
                 android:gravity="start"
                 android:padding="10dp"
-                android:text="Trip News Form"
+                android:text="Creating a Post"
                 android:textAlignment="textStart"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/black"
@@ -178,7 +179,7 @@
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:hint="Select News Type"
+                android:hint="Select Post Type"
                 android:textColorHint="@color/black"
                 app:layout_constraintStart_toStartOf="@+id/tl_description_layout"
                 app:layout_constraintTop_toBottomOf="@+id/tl_description_layout"

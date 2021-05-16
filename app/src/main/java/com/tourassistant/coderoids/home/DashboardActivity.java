@@ -159,7 +159,10 @@ public class DashboardActivity extends BaseActivity {
                 if (item.getItemId() == R.id.trips) {
                     navController.navigate(R.id.tripsFragment);
                 } else if (item.getItemId() == R.id.requests) {
-                    manageFriendRequest();
+                    navController.navigate(R.id.friendRequestFragment);
+                    //manageFriendRequest();
+                } else if (item.getItemId() == R.id.news_feed) {
+                    navController.navigate(R.id.news_feed);
                 } else {
                     navController.navigate(R.id.homeFragment);
                 }

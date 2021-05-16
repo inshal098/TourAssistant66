@@ -43,6 +43,7 @@
                 android:textColor="@color/black"
                 android:text="Time"
                 android:padding="10dp"
+                android:visibility="gone"
                 android:layout_below="@+id/chat_desc"
                 android:layout_toRightOf="@+id/profile_photo"/>
         </RelativeLayout>

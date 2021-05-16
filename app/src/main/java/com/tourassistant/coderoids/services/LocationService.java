@@ -39,6 +39,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
@@ -67,6 +68,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     private IBinder mBinder = new LocationServiceBinder();
     SharedPreferences.Editor editorLogin;
     SharedPreferences prefLogin;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -102,19 +104,20 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     manageAndPublishNotification(dataSnapshot);
                 }
+
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
                     DatabaseError databaseError = error;
                 }
             };
             mDatabase.addValueEventListener(postListener);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     private void manageAndPublishNotification(DataSnapshot dataSnapshot) {
-        for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
             NotificationPublish value = postSnapshot.getValue(NotificationPublish.class);
             Intent intent = new Intent("com.coderoids.notification");
             intent.putExtra("message", value.getNotificationMessage());
@@ -173,16 +176,25 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                         }
                         double latitude = Double.parseDouble(location.getLatitude());
                         double longitude = Double.parseDouble(location.getLongitude());
-                        Log.e("Service", " Lat" +  latitude +"," +longitude);
-                        if(prefLogin.getString("isTripInProgress" ,"0").matches("1")) {
-                            String currentTime = String.valueOf(System.currentTimeMillis());
-                            TripCurrentLocation tripCurrentLocation = new TripCurrentLocation();
-                            tripCurrentLocation.setLatitude(latitude + "");
-                            tripCurrentLocation.setLongitude(longitude + "");
-                            tripCurrentLocation.setSpeed(location.getSpeed() + "");
-                            tripCurrentLocation.setTime(currentTime + "");
-                            //FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-                            //rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("TripCoordinates").document(currentTime).set(tripCurrentLocation);
+                        Log.e("Service", " Lat" + latitude + "," + longitude);
+                        String currentTime = String.valueOf(System.currentTimeMillis());
+                        TripCurrentLocation tripCurrentLocation = new TripCurrentLocation();
+                        tripCurrentLocation.setLatitude(latitude + "");
+                        tripCurrentLocation.setLongitude(longitude + "");
+                        tripCurrentLocation.setSpeed(location.getSpeed() + "");
+                        tripCurrentLocation.setTime(currentTime + "");
+                        if (prefLogin.getString("isTripInProgress", "0").matches("1") && AppHelper.tripEntityList.getFirebaseId() != null) {
+                            FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                            rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("TripCoordinates").document(currentTime).set(tripCurrentLocation);
+                        }
+
+                        if (prefLogin.getString("userTracking", "0").matches("1") && AppHelper.currentProfileInstance != null) {
+                            FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                            rootRef.collection("Users")
+                                    .document(AppHelper.currentProfileInstance.getUserId())
+                                    .collection("locationTracking")
+                                    .document(currentTime)
+                                    .set(tripCurrentLocation);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -217,22 +229,20 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         }
     }
 
-    public class updateLocation extends AsyncTask<Object, String, String>
-    {
+    public class updateLocation extends AsyncTask<Object, String, String> {
         @Override
-        protected void onPreExecute()
-        {
+        protected void onPreExecute() {
             super.onPreExecute();
         }
 
         @Override
 
         protected String doInBackground(Object... params) {
-                try {
-                    runnableupdateTruck.run();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+            try {
+                runnableupdateTruck.run();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             try {
                 Thread.sleep(frequency);
             } catch (InterruptedException ex) {
@@ -244,8 +254,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         }
 
         @Override
-        protected void onPostExecute(String s)
-        {
+        protected void onPostExecute(String s) {
             super.onPostExecute(s);
             if (shouldContinueRunnable) {
                 uLocation = new updateLocation();
@@ -254,9 +263,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         }
     }
 
-    public  static boolean checkUpdateLocationAsyncRunning(){
-        if (uLocation != null ) {
-            if (uLocation.getStatus() != AsyncTask.Status.RUNNING ) {
+    public static boolean checkUpdateLocationAsyncRunning() {
+        if (uLocation != null) {
+            if (uLocation.getStatus() != AsyncTask.Status.RUNNING) {
                 uLocation.cancel(true);
                 AppHelper.runAsyncTaskWithout(uLocation);
             }
@@ -278,8 +287,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
                 stopSelf();
             Log.v("Rezsponse", "Destroy Location Data");
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -325,7 +333,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             helper.setLongitude("" + location.getLongitude());
             helper.setSpeed("" + 3.6 * location.getSpeed()); //changed from 4
             helper.setBearing("" + location.getBearing());
-            helper.setGpsCoordinate( location.getLatitude() + "," + location.getLongitude());
+            helper.setGpsCoordinate(location.getLatitude() + "," + location.getLongitude());
             helper.setLocation(location);
         }
     }
@@ -340,7 +348,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     }
 
 
-    public static void startBreakChecking(){
+    public static void startBreakChecking() {
 //        executor = Executors.newScheduledThreadPool(1);
 //
 //
@@ -372,7 +380,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 //        future = executor.scheduleWithFixedDelay(runnable, 0, 60, TimeUnit.SECONDS);
     }
 
-    public static void stopBreakChecking(){
+    public static void stopBreakChecking() {
 //        future.cancel(true);
 //        future = null;
 //        executor = null;
@@ -429,7 +437,6 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             return LocationService.this;
         }
     }
-
 
 
 }

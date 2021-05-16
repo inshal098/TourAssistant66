@@ -15,6 +15,7 @@ public class Profile {
     private String totalPosts = "";
     private String website = "";
     private String aboutDescription = "";
+    private String isTrackingEnabled = "";
 
     public String getAboutDescription() {
         return aboutDescription;
@@ -110,5 +111,13 @@ public class Profile {
 
     public void setTotalPosts(String totalPosts) {
         this.totalPosts = totalPosts;
+    }
+
+    public String getIsTrackingEnabled() {
+        return isTrackingEnabled;
+    }
+
+    public void setIsTrackingEnabled(String isTrackingEnabled) {
+        this.isTrackingEnabled = isTrackingEnabled;
     }
 }

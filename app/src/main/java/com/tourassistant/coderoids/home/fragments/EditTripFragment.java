@@ -226,23 +226,27 @@ public class EditTripFragment extends Fragment {
                                     etDestinaation.setText(tripEntity.getDestination());
                                 }
                                 if(tripEntity.getDestinationId() != null && !tripEntity.getDestinationId().matches("")){
-                                    String[] destinationIds;
-                                    String[] destinationNames;
-                                    if(tripEntity.getDestinationId().contains(",")) {
-                                        destinationIds = tripEntity.getDestinationId().split(",");
-                                    } else {
-                                        destinationIds = new String[1];
-                                        destinationIds[0] = tripEntity.getDestinationId();
+//                                    if(tripEntity.getDestinationId().contains(",")) {
+//                                        destinationIds = tripEntity.getDestinationId().split(",");
+//                                    } else {
+//                                        destinationIds = new String[1];
+//                                        destinationIds[0] = tripEntity.getDestinationId();
+//                                    }
+//                                    if(tripEntity.getDestination().contains(",")) {
+//                                        destinationNames = tripEntity.getDestination().split(",");
+//                                    } else {
+//                                        destinationNames = new String[1];
+//                                        destinationNames [0]= tripEntity.getDestination();
+//                                    }
+                                    try {
+                                        JSONArray jsonArray = new JSONArray(tripEntity.getDestinationId());
+                                        TripsDestinationAdapter tripsDestinationAdapter = new TripsDestinationAdapter(getContext(),jsonArray);
+                                        rvDestinations.setAdapter(tripsDestinationAdapter);
+                                        rvDestinations.setLayoutManager(destinationsMan);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
                                     }
-                                    if(tripEntity.getDestination().contains(",")) {
-                                        destinationNames = tripEntity.getDestination().split(",");
-                                    } else {
-                                        destinationNames = new String[1];
-                                        destinationNames [0]= tripEntity.getDestination();
-                                    }
-                                    TripsDestinationAdapter tripsDestinationAdapter = new TripsDestinationAdapter(getContext(),destinationIds,destinationNames);
-                                    rvDestinations.setAdapter(tripsDestinationAdapter);
-                                    rvDestinations.setLayoutManager(destinationsMan);
+
                                 }
                             }
                         });
