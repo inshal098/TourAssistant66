@@ -68,6 +68,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         rootRef = FirebaseFirestore.getInstance();
         users = FirebaseAuth.getInstance().getCurrentUser();
+        loginProcessHelper = new PermissionHelper(PreDashBoardActivity.this);
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Please Wait While We Load your Content...");
         progressDialog.setIndeterminate(true);
@@ -237,7 +238,6 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                                     uidRef4.update("followers", AppHelper.allFriends.size() + "");
                                     uidRef4.update("following", AppHelper.allFriends.size() + "");
                                     progressDialog.dismiss();
-                                    loginProcessHelper = new PermissionHelper(PreDashBoardActivity.this);
                                     if (!loginProcessHelper.checkGpsStatus()) {
                                         loginProcessHelper.askGPSPermission();
                                     } else
