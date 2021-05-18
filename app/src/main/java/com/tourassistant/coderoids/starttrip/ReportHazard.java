@@ -40,6 +40,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -73,8 +74,8 @@ public class ReportHazard extends AppCompatActivity {
     TextView tvAddImage, tvGeoPoint;
     Blob profileImageBlob = null;
     GeoPoint point;
-    Button btnSignUp ,btnBack;
-    String[] SPINNERLIST = {"Road Trip","Beauty","Adventure","Nature","Land Slide", "Snow", "Road Block", "Bad Weather", "other"};
+    Button btnSignUp, btnBack;
+    String[] SPINNERLIST = {"Road Trip", "Beauty", "Adventure", "Nature", "Land Slide", "Snow", "Road Block", "Bad Weather", "other"};
     TextInputEditText etName, etTripTitle, etDesctiption;
     MaterialBetterSpinner materialDesignSpinner;
     Bitmap bitmapLowRes = null;
@@ -137,49 +138,56 @@ public class ReportHazard extends AppCompatActivity {
     }
 
     private void uploadNews() {
-        ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Please Wait...");
-        progressDialog.setIndeterminate(true);
-        progressDialog.show();
-        String nameUser = etName.getText().toString();
-        String etDesctiptionS = etDesctiption.getText().toString();
-        String etTripTitleS = etTripTitle.getText().toString();
-        if (!nameUser.matches("") && !nameUser.isEmpty() && !etDesctiptionS.isEmpty() && !etTripTitleS.isEmpty() && !materialDesignSpinner.getText().toString().isEmpty()
-                && !tvGeoPoint.getText().toString().isEmpty() && profileImageBlob != null) {
-            FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-            NewsFeed newsFeed = new NewsFeed();
-            newsFeed.setTitle(etTripTitleS);
-            newsFeed.setUserName(nameUser);
-            newsFeed.setDescription(etDesctiptionS);
-            newsFeed.setHazardType(materialDesignSpinner.getText().toString());
-            newsFeed.setNewsThumbNail(profileImageBlob);
-            newsFeed.setGeoPoint(point);
-            newsFeed.setDateInMillis(System.currentTimeMillis()+"");
-            if(AppHelper.tripEntityList != null && AppHelper.tripEntityList.getFirebaseId() != null){
-                newsFeed.setTripId(AppHelper.tripEntityList.getFirebaseId());
-                rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("NewsFeed").document().set(newsFeed);
-            } else
-                newsFeed.setTripId("");
+        try {
 
-            rootRef.collection("NewsFeed").document().set(newsFeed).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isComplete()){
-                        progressDialog.dismiss();
-                        rlEmpty.setVisibility(View.VISIBLE);
-                        contentNews.setVisibility(View.GONE);
+
+            ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setMessage("Please Wait...");
+            progressDialog.setIndeterminate(true);
+            progressDialog.show();
+            String nameUser = etName.getText().toString();
+            String etDesctiptionS = etDesctiption.getText().toString();
+            String etTripTitleS = etTripTitle.getText().toString();
+            if (!nameUser.matches("") && !nameUser.isEmpty() && !etDesctiptionS.isEmpty() && !etTripTitleS.isEmpty() && !materialDesignSpinner.getText().toString().isEmpty()
+                    && !tvGeoPoint.getText().toString().isEmpty() && profileImageBlob != null) {
+                FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                NewsFeed newsFeed = new NewsFeed();
+                newsFeed.setTitle(etTripTitleS);
+                newsFeed.setUserName(nameUser);
+                newsFeed.setDescription(etDesctiptionS);
+                newsFeed.setHazardType(materialDesignSpinner.getText().toString());
+                newsFeed.setNewsThumbNail(profileImageBlob);
+                newsFeed.setGeoPoint(point);
+                newsFeed.setDateInMillis(System.currentTimeMillis() + "");
+                if (AppHelper.tripEntityList != null && AppHelper.tripEntityList.getFirebaseId() != null) {
+                    newsFeed.setTripId(AppHelper.tripEntityList.getFirebaseId());
+                    rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("NewsFeed").document().set(newsFeed);
+                } else
+                    newsFeed.setTripId("");
+
+                rootRef.collection("NewsFeed").document().set(newsFeed).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isComplete()) {
+                            progressDialog.dismiss();
+                            rlEmpty.setVisibility(View.VISIBLE);
+                            contentNews.setVisibility(View.GONE);
+                        }
                     }
-                }
-            });
+                });
 
-            rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("NewsFeed").document().set(newsFeed).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
+                rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("NewsFeed").document().set(newsFeed).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
 
-                }
-            });
-        } else {
-            Toast.makeText(this, "All Fields are Mandatory", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(this, "All Fields are Mandatory", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(ex);
         }
     }
 
@@ -335,6 +343,7 @@ public class ReportHazard extends AppCompatActivity {
                     profileImageBlob = Blob.fromBytes(byteArray);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
             } else if (requestCode == REQUEST_GALLERY_PHOTO) {
                 Uri selectedImage = data.getData();
@@ -342,6 +351,7 @@ public class ReportHazard extends AppCompatActivity {
                     //mPhotoFile = mCompressor.compressToFile(new File(getRealPathFromUri(selectedImage)));
                 } catch (Exception e) {
                     e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
 
             }

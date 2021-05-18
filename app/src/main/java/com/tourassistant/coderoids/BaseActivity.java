@@ -23,6 +23,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -60,62 +61,68 @@ public abstract class BaseActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        baseActivityInstance = this;
-        rootRef = FirebaseFirestore.getInstance();
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        prefLogin = getSharedPreferences("logindata", Context.MODE_PRIVATE);
-        editorLogin = prefLogin.edit();
-        editorLogin.apply();
-        if (AppHelper.currentProfileInstance != null && AppHelper.currentProfileInstance.getUserId() != null) {
-            mDatabase = FirebaseDatabase.getInstance().getReference();
-            mDatabase.child("userChats").child(AppHelper.currentProfileInstance.getUserId()).child(AppHelper.currentProfileInstance.getUserId()).setValue("");
-        }
-        receiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                try {
-                    if (intent != null) {
-                        JSONObject jsonArray = new JSONObject(intent.getStringExtra("message"));
-                        JSONArray messagObj = new JSONArray(jsonArray.getString("notificationMessage"));
-                        JSONObject jsonObject = messagObj.getJSONObject(0);
-
-                        if (intent.getStringExtra("notificationType").contains("PublicTripsRequest")) {
-                            if (HomeFragment.instance != null) {
-                                HomeFragment.instance.getAllTrips();
-                                Toast.makeText(context, "Go To Trip Listing To Approve Join Request", Toast.LENGTH_SHORT).show();
-                            }
-                        } else if (intent.getStringExtra("notificationType").contains("FollowRequest")) {
-                            DashboardActivity.instance.manageFriendRequest();
-                        } else if (intent.getStringExtra("notificationType").contains("FollowRequestAccept")) {
-                            Toast.makeText(context, "Your Follow Request is Accepted", Toast.LENGTH_SHORT).show();
-                        } else if (intent.getStringExtra("notificationType").contains("TripInProgress")) {
-                            String tripId = jsonObject.getString("id");
-                            AppHelper.inProgressTripId = tripId;
-                            Toast.makeText(context, jsonObject.getString("message"), Toast.LENGTH_SHORT).show();
-                            if(TripRoomFragment.instance != null){
-                                TripRoomFragment.instance.updateTripUI(AppHelper.inProgressTripId);
-                            }
-                        } else if(intent.getStringExtra("notificationType").contains("TripReplanned")){
-                            Toast.makeText(context, "A Trip is Replanned", Toast.LENGTH_SHORT).show();
-                            String tripId = jsonObject.getString("id");
-                            rootRef.collection("PublicTrips").document(tripId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if(task.isSuccessful()){
-                                        AppHelper.tripEntityList  = task.getResult().toObject(TripEntity.class);
-                                        if(TripRoomFragment.instance != null)
-                                            TripRoomFragment.instance.updateTripUI(tripId);
-                                    }
-                                }
-                            });
-                        }
-                    }
-                } catch (JSONException ex) {
-                    ex.printStackTrace();
-                }
-
+        try {
+            baseActivityInstance = this;
+            rootRef = FirebaseFirestore.getInstance();
+            firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            prefLogin = getSharedPreferences("logindata", Context.MODE_PRIVATE);
+            editorLogin = prefLogin.edit();
+            editorLogin.apply();
+            if (AppHelper.currentProfileInstance != null && AppHelper.currentProfileInstance.getUserId() != null) {
+                mDatabase = FirebaseDatabase.getInstance().getReference();
+                mDatabase.child("userChats").child(AppHelper.currentProfileInstance.getUserId()).child(AppHelper.currentProfileInstance.getUserId()).setValue("");
             }
-        };
+            receiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    try {
+                        if (intent != null) {
+                            JSONObject jsonArray = new JSONObject(intent.getStringExtra("message"));
+                            JSONArray messagObj = new JSONArray(jsonArray.getString("notificationMessage"));
+                            JSONObject jsonObject = messagObj.getJSONObject(0);
+
+                            if (intent.getStringExtra("notificationType").contains("PublicTripsRequest")) {
+                                if (HomeFragment.instance != null) {
+                                    HomeFragment.instance.getAllTrips();
+                                    Toast.makeText(context, "Go To Trip Listing To Approve Join Request", Toast.LENGTH_SHORT).show();
+                                }
+                            } else if (intent.getStringExtra("notificationType").contains("FollowRequest")) {
+                                DashboardActivity.instance.manageFriendRequest();
+                            } else if (intent.getStringExtra("notificationType").contains("FollowRequestAccept")) {
+                                Toast.makeText(context, "Your Follow Request is Accepted", Toast.LENGTH_SHORT).show();
+                            } else if (intent.getStringExtra("notificationType").contains("TripInProgress")) {
+                                String tripId = jsonObject.getString("id");
+                                AppHelper.inProgressTripId = tripId;
+                                Toast.makeText(context, jsonObject.getString("message"), Toast.LENGTH_SHORT).show();
+                                if (TripRoomFragment.instance != null) {
+                                    TripRoomFragment.instance.updateTripUI(AppHelper.inProgressTripId);
+                                }
+                            } else if (intent.getStringExtra("notificationType").contains("TripReplanned")) {
+                                Toast.makeText(context, "A Trip is Replanned", Toast.LENGTH_SHORT).show();
+                                String tripId = jsonObject.getString("id");
+                                rootRef.collection("PublicTrips").document(tripId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        if (task.isSuccessful()) {
+                                            AppHelper.tripEntityList = task.getResult().toObject(TripEntity.class);
+                                            if (TripRoomFragment.instance != null)
+                                                TripRoomFragment.instance.updateTripUI(tripId);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    } catch (JSONException ex) {
+                        ex.printStackTrace();
+                        FirebaseCrashlytics.getInstance().recordException(ex);
+                    }
+
+                }
+            };
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(ex);
+        }
     }
 
 

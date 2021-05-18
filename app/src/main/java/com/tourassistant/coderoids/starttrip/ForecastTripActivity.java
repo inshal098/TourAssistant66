@@ -24,6 +24,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -98,42 +99,48 @@ public class ForecastTripActivity extends AppCompatActivity {
         replanTrip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(ForecastTripActivity.this,ReplanTrip.class));
+                startActivity(new Intent(ForecastTripActivity.this, ReplanTrip.class));
             }
         });
     }
 
     private void fetchWeather() {
-        new WeatherManager(getResources().getString(R.string.weather_forecast_id)).getFiveDayForecastByCoordinates(
-                destinationLatLng.latitude, // latitude
-                destinationLatLng.longitude, // longitude
-                new WeatherManager.ForecastHandler() {
-                    @Override
-                    public void onReceivedForecast(WeatherManager manager, Forecast forecast) {
-                        List<Double> list = new ArrayList<>();
-                        List<Weather> weathers = new ArrayList<>();
-                        for (int i = 0; i < 5; i++) {
-                            long timestamp = forecast.getTimestampByIndex(i + 3);
-                            Weather weatherForTimestamp = forecast.getWeatherForTimestamp(timestamp);
-                            weathers.add(weatherForTimestamp);
-                            Temperature tempMini = weatherForTimestamp.getTemperature().getMinimum();
-                            double temperatureInCelcius = tempMini.getValue(TemperatureUnit.CELCIUS);
-                            list.add(temperatureInCelcius);
+        try {
+
+            new WeatherManager(getResources().getString(R.string.weather_forecast_id)).getFiveDayForecastByCoordinates(
+                    destinationLatLng.latitude, // latitude
+                    destinationLatLng.longitude, // longitude
+                    new WeatherManager.ForecastHandler() {
+                        @Override
+                        public void onReceivedForecast(WeatherManager manager, Forecast forecast) {
+                            List<Double> list = new ArrayList<>();
+                            List<Weather> weathers = new ArrayList<>();
+                            for (int i = 0; i < 5; i++) {
+                                long timestamp = forecast.getTimestampByIndex(i + 3);
+                                Weather weatherForTimestamp = forecast.getWeatherForTimestamp(timestamp);
+                                weathers.add(weatherForTimestamp);
+                                Temperature tempMini = weatherForTimestamp.getTemperature().getMinimum();
+                                double temperatureInCelcius = tempMini.getValue(TemperatureUnit.CELCIUS);
+                                list.add(temperatureInCelcius);
+
+                            }
+                            ForecastTripWeatherAdapter forecastTripWeatherAdapter = new ForecastTripWeatherAdapter(ForecastTripActivity.this, weathers);
+                            rvWeatherForecast.setAdapter(forecastTripWeatherAdapter);
+                            rvWeatherForecast.setLayoutManager(llForecastMan);
+                            int minIndex = list.indexOf(Collections.min(list));
+                            Log.v("Weather MINI", "Température mini : " + list.get(minIndex));
+                            //Toast.makeText(context, "Température mini: " + list.get(minIndex), Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onFailedToReceiveForecast(WeatherManager manager) {
 
                         }
-                        ForecastTripWeatherAdapter forecastTripWeatherAdapter = new ForecastTripWeatherAdapter(ForecastTripActivity.this, weathers);
-                        rvWeatherForecast.setAdapter(forecastTripWeatherAdapter);
-                        rvWeatherForecast.setLayoutManager(llForecastMan);
-                        int minIndex = list.indexOf(Collections.min(list));
-                        Log.v("Weather MINI", "Température mini : " + list.get(minIndex));
-                        //Toast.makeText(context, "Température mini: " + list.get(minIndex), Toast.LENGTH_LONG).show();
-                    }
-
-                    @Override
-                    public void onFailedToReceiveForecast(WeatherManager manager) {
-
-                    }
-                });
+                    });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(ex);
+        }
     }
 
     private void fetchTripNews() {
@@ -141,13 +148,19 @@ public class ForecastTripActivity extends AppCompatActivity {
         rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("NewsFeed").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
-                    documentSnapshots.size();
-                    NewsListingAdapter newsListingAdapter = new NewsListingAdapter(ForecastTripActivity.this, documentSnapshots);
-                    rvNewsSection.setAdapter(newsListingAdapter);
-                    rvNewsSection.setLayoutManager(llNewsMan);
+                try {
+                    if (task.isSuccessful()) {
+                        List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                        documentSnapshots.size();
+                        NewsListingAdapter newsListingAdapter = new NewsListingAdapter(ForecastTripActivity.this, documentSnapshots);
+                        rvNewsSection.setAdapter(newsListingAdapter);
+                        rvNewsSection.setLayoutManager(llNewsMan);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
+
             }
         });
     }

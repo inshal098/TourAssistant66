@@ -37,6 +37,7 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -114,6 +115,7 @@ public class ReplanTrip extends AppCompatActivity {
             }
         } catch (JSONException ex) {
             ex.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(ex);
         }
 
 
@@ -181,6 +183,7 @@ public class ReplanTrip extends AppCompatActivity {
                             }
                         } catch (JSONException ex) {
                             ex.printStackTrace();
+                            FirebaseCrashlytics.getInstance().recordException(ex);
                         }
                     }
                 }
@@ -197,6 +200,7 @@ public class ReplanTrip extends AppCompatActivity {
                 rvDestinationEdit.setLayoutManager(llm);
             } catch (JSONException ex) {
                 ex.printStackTrace();
+                FirebaseCrashlytics.getInstance().recordException(ex);
             }
 
         }
@@ -239,6 +243,7 @@ public class ReplanTrip extends AppCompatActivity {
                     manageAndUpdatePlace(place);
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
             }
         }
@@ -293,6 +298,7 @@ public class ReplanTrip extends AppCompatActivity {
             });
         } catch (Exception e) {
             e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
     }
 
@@ -312,6 +318,7 @@ public class ReplanTrip extends AppCompatActivity {
                     manageAndUpdatePlace(placed);
                 } catch (JSONException ex) {
                     ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
             }
         };
@@ -331,6 +338,7 @@ public class ReplanTrip extends AppCompatActivity {
                 fetchDestinations();
             } catch (Exception ex) {
                 ex.printStackTrace();
+                FirebaseCrashlytics.getInstance().recordException(ex);
             }
         }
     }
@@ -376,6 +384,8 @@ public class ReplanTrip extends AppCompatActivity {
                 if (exception instanceof ApiException) {
                     final ApiException apiException = (ApiException) exception;
                     final int statusCode = apiException.getStatusCode();
+                    FirebaseCrashlytics.getInstance().recordException(exception);
+
                     // TODO: Handle error with given status code.
                 }
             });

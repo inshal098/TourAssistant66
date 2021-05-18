@@ -28,6 +28,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -46,11 +47,12 @@ import com.tourassistant.coderoids.services.LocationThread;
 import com.tourassistant.coderoids.starttrip.StartTrip;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PreDashBoardActivity extends RuntimePermissionsActivity implements RequestCompletionListener , LoginHelperInterface {
+public class PreDashBoardActivity extends RuntimePermissionsActivity implements RequestCompletionListener, LoginHelperInterface {
     ProgressDialog progressDialog;
     RequestCompletionListener requestCompletionListener;
     FirebaseFirestore rootRef;
@@ -75,7 +77,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
         error.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               handleState();
+                handleState();
             }
         });
         handleState();
@@ -94,16 +96,17 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
 
     public void startLocationService() {
         boolean isLocationServiceRunning = isServiceRunning(LocationService.class);
-        if (isLocationServiceRunning ) {
+        if (isLocationServiceRunning) {
             stopLocationService();
         }
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 try {
-                    LocationThread locationThread = new LocationThread(PreDashBoardActivity.this,"LocationService");
+                    LocationThread locationThread = new LocationThread(PreDashBoardActivity.this, "LocationService");
                     locationThread.start();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
             }
         }, 3000);
@@ -114,7 +117,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
         boolean isLocationServiceRunning = isServiceRunning(LocationService.class);
         if (isLocationServiceRunning) {
             stopService(new Intent(this, LocationService.class));
-            if(LocationThread.t != null){
+            if (LocationThread.t != null) {
                 LocationThread.t.interrupt();
                 LocationThread.t = null;
             }
@@ -126,8 +129,8 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
         requestCurrentLocation();
     }
 
-    private void handleState(){
-        if(AppHelper.isNetworkAvailable(getApplicationContext()))
+    private void handleState() {
+        if (AppHelper.isNetworkAvailable(getApplicationContext()))
             manageUserPreferences();
         else {
             progressDialog.dismiss();
@@ -137,7 +140,6 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
 
     private void manageUserPreferences() {
         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-
         rootRef.collection("Users").document(users.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -149,6 +151,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                         AppHelper.interestUser = new JSONArray(AppHelper.currentProfileInstance.getInterests());
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
             }
         });
@@ -156,20 +159,26 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
         rootRef.collection("PublicTrips").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isComplete()) {
-                    List<DocumentSnapshot> publicTrips = task.getResult().getDocuments();
-                    if(publicTrips.size()>0) {
-                        FilterPublicTrips filterPublicTrips = new FilterPublicTrips(PreDashBoardActivity.this, publicTrips, requestCompletionListener);
-                        AppHelper.filteredTrips = new ArrayList<>();
-                        filterPublicTrips.filteredTrips();
-                    } else
-                        requestCompletionListener.onListFilteredCompletion(false);
+                try {
+                    if (task.isComplete()) {
+                        List<DocumentSnapshot> publicTrips = task.getResult().getDocuments();
+                        if (publicTrips.size() > 0) {
+                            FilterPublicTrips filterPublicTrips = new FilterPublicTrips(PreDashBoardActivity.this, publicTrips, requestCompletionListener);
+                            AppHelper.filteredTrips = new ArrayList<>();
+                            filterPublicTrips.filteredTrips();
+                        } else
+                            requestCompletionListener.onListFilteredCompletion(false);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 requestCompletionListener.onListFilteredCompletion(false);
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
         });
     }
@@ -183,88 +192,74 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
         rootRef.collection("Users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isComplete()) {
-                    List<DocumentSnapshot> allUsers = task.getResult().getDocuments();
-                    FirebaseUser users = FirebaseAuth.getInstance().getCurrentUser();
-                    AppHelper.allUsers = new ArrayList<>();
-                    for (int i = 0; i < allUsers.size(); i++) {
-                        DocumentSnapshot documentSnapshot = allUsers.get(i);
-                        if (!users.getUid().matches(documentSnapshot.getId())) {
-                            AppHelper.allUsers.add(documentSnapshot);
+                try {
+                    if (task.isComplete()) {
+                        List<DocumentSnapshot> allUsers = task.getResult().getDocuments();
+                        FirebaseUser users = FirebaseAuth.getInstance().getCurrentUser();
+                        AppHelper.allUsers = new ArrayList<>();
+                        for (int i = 0; i < allUsers.size(); i++) {
+                            DocumentSnapshot documentSnapshot = allUsers.get(i);
+                            if (!users.getUid().matches(documentSnapshot.getId())) {
+                                AppHelper.allUsers.add(documentSnapshot);
+                            }
                         }
+                        requestCompletionListener.onAllUsersCompletion(true);
                     }
-                    requestCompletionListener.onAllUsersCompletion(true);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 e.printStackTrace();
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
         });
     }
 
     @Override
     public void onAllUsersCompletion(boolean status) {
-        if (status) {
-            requestCompletionListener.onAllUsersCompletion(false);
-//            rootRef.collection("Users").document(users.getUid()).collection("FriendRequestSent").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                @Override
-//                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                    if (task.isComplete()) {
-//                        List<DocumentSnapshot> allSentRequest = task.getResult().getDocuments();
-//                        List<DocumentSnapshot> newAllUser = new ArrayList<>();
-////                        for (int i = 0; i < allSentRequest.size(); i++) {
-////                            DocumentSnapshot documentSnapshot = allSentRequest.get(i);
-////                            String userId = documentSnapshot.getString("userFirestoreIdReceiver");
-////                            if (userId != null) {
-////                                for (int j = 0; j < AppHelper.allUsers.size(); j++) {
-////                                    DocumentSnapshot documentSnapshot2 = AppHelper.allUsers.get(j);
-////                                    if (documentSnapshot2.getId() != null) {
-////                                        String usersId = documentSnapshot2.getId();
-////                                        if (!userId.matches(usersId)) {
-////                                            newAllUser.add(documentSnapshot2);
-////                                        }
-////                                    }
-////                                }
-////                            }
-////                        }
-////                        if (newAllUser.size() > 0) {
-////                            AppHelper.allUsers = newAllUser;
-////                        }
-//                        requestCompletionListener.onAllUsersCompletion(false);
-//                    }
-//                }
-//            });
-        } else {
-            if (AppHelper.currentProfileInstance != null) {
-                rootRef.collection("Users").document(users.getUid()).collection("Friends").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isComplete()) {
-                            List<DocumentSnapshot> friendsList = task.getResult().getDocuments();
-                            AppHelper.allFriends = friendsList;
-                            DocumentReference uidRef4 = rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId());
-                            uidRef4.update("followers", AppHelper.allFriends.size() + "");
-                            uidRef4.update("following", AppHelper.allFriends.size() + "");
-                            progressDialog.dismiss();
-                            loginProcessHelper = new PermissionHelper(PreDashBoardActivity.this);
-                            if(!loginProcessHelper.checkGpsStatus()){
-                                loginProcessHelper.askGPSPermission();
-                            } else
-                                PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                                        , loginProcessHelper.REQUEST_PERMISSIONS);
-
-                        }
-                    }
-                });
+        try {
+            if (status) {
+                requestCompletionListener.onAllUsersCompletion(false);
             } else {
-                progressDialog.dismiss();
-                PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                        , loginProcessHelper.REQUEST_PERMISSIONS);
+                if (AppHelper.currentProfileInstance != null) {
+                    rootRef.collection("Users").document(users.getUid()).collection("Friends").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            try {
+                                if (task.isComplete()) {
+                                    List<DocumentSnapshot> friendsList = task.getResult().getDocuments();
+                                    AppHelper.allFriends = friendsList;
+                                    DocumentReference uidRef4 = rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId());
+                                    uidRef4.update("followers", AppHelper.allFriends.size() + "");
+                                    uidRef4.update("following", AppHelper.allFriends.size() + "");
+                                    progressDialog.dismiss();
+                                    loginProcessHelper = new PermissionHelper(PreDashBoardActivity.this);
+                                    if (!loginProcessHelper.checkGpsStatus()) {
+                                        loginProcessHelper.askGPSPermission();
+                                    } else
+                                        PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
+                                                , loginProcessHelper.REQUEST_PERMISSIONS);
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                FirebaseCrashlytics.getInstance().recordException(ex);
+                            }
+                        }
+                    });
+                } else {
+                    progressDialog.dismiss();
+                    PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
+                            , loginProcessHelper.REQUEST_PERMISSIONS);
+                }
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(ex);
         }
-
     }
 
     @Override
@@ -275,17 +270,22 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
 
 
     private void requestCurrentLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED) {
-            startLocationService();
-            startActivity(new Intent(PreDashBoardActivity.this, DashboardActivity.class));
-            finish();
-        } else {
-            // TODO: Request fine location permission
-            checkLocationPermission();
-            Log.d("Permission", "Request fine location permission.");
+        try {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                startLocationService();
+                startActivity(new Intent(PreDashBoardActivity.this, DashboardActivity.class));
+                finish();
+            } else {
+                // TODO: Request fine location permission
+                checkLocationPermission();
+                Log.d("Permission", "Request fine location permission.");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(ex);
         }
     }
 
@@ -310,8 +310,6 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                         })
                         .create()
                         .show();
-
-
             } else {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
@@ -336,7 +334,6 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                 }
                 return;
             }
-
         }
     }
 }

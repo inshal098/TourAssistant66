@@ -48,6 +48,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -69,6 +70,7 @@ import com.tourassistant.coderoids.services.LocationThread;
 import com.tourassistant.coderoids.starttrip.StartTrip;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.List;
 
@@ -98,7 +100,6 @@ public class DashboardActivity extends BaseActivity {
             Toast.makeText(instance, "Base Configured", Toast.LENGTH_SHORT).show();
         }
         localEventListener();
-
     }
 
     public void updateNavigation() {
@@ -184,11 +185,17 @@ public class DashboardActivity extends BaseActivity {
         rootRef.collection("Trips").document(firebaseUser.getUid()).collection("UserTrips").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (!value.isEmpty()) {
-                    if (DashboardActivity.instance != null) {
-                        setupNavigation();
+                try {
+                    if (!value.isEmpty()) {
+                        if (DashboardActivity.instance != null) {
+                            setupNavigation();
+                        }
                     }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
+
             }
         });
     }
@@ -233,13 +240,18 @@ public class DashboardActivity extends BaseActivity {
         rootRef.collection("Users").document(uid).collection("FriendRequestsReceived").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isComplete()) {
-                    List<DocumentSnapshot> friendRequest = task.getResult().getDocuments();
-                    if (friendRequest.size() > 0) {
-                        AppHelper.friendRequests = friendRequest;
-                        navController.navigate(R.id.friendRequestFragment);
-                    } else
-                        Toast.makeText(DashboardActivity.this, "No New Requests", Toast.LENGTH_SHORT).show();
+                try {
+                    if (task.isComplete()) {
+                        List<DocumentSnapshot> friendRequest = task.getResult().getDocuments();
+                        if (friendRequest.size() > 0) {
+                            AppHelper.friendRequests = friendRequest;
+                            navController.navigate(R.id.friendRequestFragment);
+                        } else
+                            Toast.makeText(DashboardActivity.this, "No New Requests", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
             }
         });
@@ -260,7 +272,6 @@ public class DashboardActivity extends BaseActivity {
         menuItem.setChecked(true);
         drawerLayout.closeDrawers();
         int id = menuItem.getItemId();
-
         switch (id) {
             case R.id.main_fragment:
                 bottomNavigationView.setVisibility(View.VISIBLE);
@@ -301,12 +312,12 @@ public class DashboardActivity extends BaseActivity {
 
     @Override
     public void RequestFinished(String fragmentName, String apiName, String responseString) {
-        Toast.makeText(this,responseString,Toast.LENGTH_LONG).show();
+        Toast.makeText(this, responseString, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void RequestSecureFinished(String fragmentName, String apiName, String responseString) {
-        Toast.makeText(this,responseString,Toast.LENGTH_LONG).show();
+        Toast.makeText(this, responseString, Toast.LENGTH_LONG).show();
 
     }
 }
