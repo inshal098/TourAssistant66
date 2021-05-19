@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -240,9 +241,11 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                                     progressDialog.dismiss();
                                     if (!loginProcessHelper.checkGpsStatus()) {
                                         loginProcessHelper.askGPSPermission();
-                                    } else
+                                    } else if (!checkPermissions())
                                         PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
                                                 , loginProcessHelper.REQUEST_PERMISSIONS);
+                                    else
+                                        requestCurrentLocation();
                                 }
                             } catch (Exception ex) {
                                 ex.printStackTrace();
@@ -252,8 +255,11 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                     });
                 } else {
                     progressDialog.dismiss();
-                    PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                            , loginProcessHelper.REQUEST_PERMISSIONS);
+                    if (!checkPermissions())
+                        PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
+                                , loginProcessHelper.REQUEST_PERMISSIONS);
+                    else
+                        requestCurrentLocation();
                 }
             }
         } catch (Exception ex) {
@@ -264,8 +270,11 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
 
     @Override
     public void onPrivacyPolicy(String state) {
-        PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                , loginProcessHelper.REQUEST_PERMISSIONS);
+        if (!checkPermissions())
+            PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
+                    , loginProcessHelper.REQUEST_PERMISSIONS);
+        else
+            requestCurrentLocation();
     }
 
 
@@ -335,5 +344,34 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                 return;
             }
         }
+    }
+
+
+    private boolean checkPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            int permissionLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+            if (permissionLocation < 0) {
+                return false;
+            } else {
+                int permissionLocation1 = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+                int permissionLocation2 = 0;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    permissionLocation2 = ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE);
+                }
+                if (permissionLocation1 < 0 || permissionLocation2 < 0) {
+                    return false;
+                } else {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != 0
+                            || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != 0
+                            || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != 0) {
+
+                        return false;
+                    } else
+                        return true;
+                }
+
+            }
+        }
+        return true;
     }
 }

@@ -54,7 +54,10 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
     public void onBindViewHolder(@NonNull final TripRequestAdapter.ViewHolder viewHolder, int position) {
         position = viewHolder.getAdapterPosition();
         try {
+            Profile currentProfile = null;
             if(tripRequest != null) {
+               currentProfile = fetchProfile(tripRequest.getJSONObject(position).getString("userId"));
+                viewHolder.mtUserName.setText(currentProfile.getDisplayName());
                 JSONObject jsonObject = tripRequest.getJSONObject(position);
                 if (jsonObject.has("status") && jsonObject.getString("status").matches("1")) {
                     viewHolder.btnFollow.setText("Added");
@@ -70,11 +73,15 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
                 } else
                     viewHolder.btnFollow.setText("Member");
             }
-            viewHolder.mtUserName.setText(tripRequesArray.get(position).getDisplayName());
 
-            byte[] bytes = tripRequesArray.get(position).getProfileImage().toBytes();
-            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            viewHolder.userImage.setImageBitmap(bmp);
+            if((currentProfile != null && currentProfile.getProfileImage() != null)|| tripRequest == null) {
+                if (tripRequest == null && currentProfile == null){
+                    currentProfile = tripRequesArray.get(position);
+                }
+                byte[] bytes = currentProfile.getProfileImage().toBytes();
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                viewHolder.userImage.setImageBitmap(bmp);
+            }
             int finalPosition = position;
             viewHolder.btnFollow.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -87,6 +94,14 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private Profile fetchProfile(String userId) {
+        for (int i=0; i <tripRequesArray.size();i++){
+            if(tripRequesArray.get(i).getUserId().matches(userId))
+                return tripRequesArray.get(i);
+        }
+        return new Profile();
     }
 
     @Override

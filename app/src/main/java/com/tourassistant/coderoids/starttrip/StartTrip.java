@@ -98,8 +98,10 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
         setContentView(R.layout.activity_start_trip);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         locationManager = LocationHelper.getInstance();
-        latitude = Double.parseDouble(locationManager.getLatitude());
-        longitude = Double.parseDouble(locationManager.getLongitude());
+        if(!locationManager.getLatitude().matches("") && !locationManager.getLongitude().matches("")) {
+            latitude = Double.parseDouble(locationManager.getLatitude());
+            longitude = Double.parseDouble(locationManager.getLongitude());
+        }
         tvDistanceDuration = findViewById(R.id.tv_distance_time);
 
         cityCurrent =  findViewById(R.id.city_field);
@@ -296,7 +298,6 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
 
         marker = new MarkerOptions().position(currentLocation).title("Address");
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-
         marker2 = new MarkerOptions().position(destination).title("Address");
         marker2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
         LatLngBounds.Builder builder = new LatLngBounds.Builder();

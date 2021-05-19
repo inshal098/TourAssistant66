@@ -31,6 +31,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.tourassistant.PreDashBoardActivity;
 import com.tourassistant.coderoids.R;
+import com.tourassistant.coderoids.helpers.AppHelper;
 
 public class AuthFragment extends Fragment {
     //a constant for detecting the login intent result

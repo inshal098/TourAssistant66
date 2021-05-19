@@ -92,6 +92,7 @@ public class PlanTrip extends BaseActivity {
                         tripEntity.setTripTitle(tripName);
                         tripEntity.setFirebaseUserId(uid);
                         tripEntity.setCreatorName(users.getDisplayName());
+                        tripEntity.setTripLocationTracking("0");
                         long tripId = AppDatabase.getAppDatabase(getApplicationContext()).tripDao().insertTrip(tripEntity);
                         String tripNameUnique = tripId +"_"+System.currentTimeMillis()+"_"+users.getEmail()+"_"+tripName;
                         tripEntity.setFirebaseId(tripNameUnique);

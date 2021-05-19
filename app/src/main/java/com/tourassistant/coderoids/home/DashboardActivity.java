@@ -38,10 +38,16 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
@@ -87,6 +93,7 @@ public class DashboardActivity extends BaseActivity {
     TextView tvToolbarTitle;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String PROPERTY_REG_ID = "registration_id";
+    GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,10 +104,13 @@ public class DashboardActivity extends BaseActivity {
         setupNavigation();
         RegisterGCM();
         startLocationService();
-        if (baseActivityInstance != null) {
-            Toast.makeText(instance, "Base Configured", Toast.LENGTH_SHORT).show();
-        }
         localEventListener();
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
     public void updateNavigation() {
@@ -293,7 +303,8 @@ public class DashboardActivity extends BaseActivity {
                 mAuth.signOut();
                 FirebaseMessaging.getInstance().deleteToken();
                 AppHelper.interestUser = new JSONArray();
-                Intent intent = new Intent(this, LoginProcessActivity.class);
+                mGoogleSignInClient.signOut();
+                Intent intent = new Intent(DashboardActivity.this, LoginProcessActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 break;

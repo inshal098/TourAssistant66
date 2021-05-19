@@ -17,8 +17,10 @@ import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.tourassistant.coderoids.R;
+import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.models.NewsFeed;
 
+import java.util.Date;
 import java.util.List;
 
 public class NewsListingAdapter extends RecyclerView.Adapter<NewsListingAdapter.ViewHolder> {
@@ -54,6 +56,9 @@ public class NewsListingAdapter extends RecyclerView.Adapter<NewsListingAdapter.
             viewHolder.title.setText(newsFeed.getTitle());
             viewHolder.newsDescription.setText(newsFeed.getDescription());
             viewHolder.postedBy.setText("By : "+newsFeed.getUserName());
+            long timieInMillis = Long.parseLong(newsFeed.getDateInMillis());
+            String duration = durationFromNow(timieInMillis);
+            viewHolder.newsTime.setText(duration +" ago");
             if (newsFeed.getNewsThumbNail() != null) {
                 byte[] bytes = newsFeed.getNewsThumbNail().toBytes();
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
@@ -62,6 +67,49 @@ public class NewsListingAdapter extends RecyclerView.Adapter<NewsListingAdapter.
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static String durationFromNow(long currentTime) {
+
+        long different = System.currentTimeMillis() - currentTime;
+
+        long secondsInMilli = 1000;
+        long minutesInMilli = secondsInMilli * 60;
+        long hoursInMilli = minutesInMilli * 60;
+        long daysInMilli = hoursInMilli * 24;
+
+        long elapsedDays = different / daysInMilli;
+        different = different % daysInMilli;
+
+        long elapsedHours = different / hoursInMilli;
+        different = different % hoursInMilli;
+
+        long elapsedMinutes = different / minutesInMilli;
+        different = different % minutesInMilli;
+
+        long elapsedSeconds = different / secondsInMilli;
+
+        String output = "";
+        if (elapsedDays > 0) {
+            if(elapsedDays >1)
+                output += elapsedDays + " days ";
+            else
+                output += elapsedDays + " day ";
+
+            return output;
+        }
+        if (elapsedDays > 0 || elapsedHours > 0) {
+            output += elapsedHours + " hours ";
+            return output;
+        }
+        if (elapsedHours > 0 || elapsedMinutes > 0) {
+            output += elapsedMinutes + " minutes ";
+            return output;
+
+        }
+        if (elapsedMinutes > 0 || elapsedSeconds > 0) output += elapsedSeconds + " seconds";
+
+        return output;
     }
 
     @Override

@@ -159,9 +159,13 @@ public class TripListAdapter extends RecyclerView.Adapter<TripListAdapter.ViewHo
                         viewHolder.btnTripRoom.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                AppHelper.tripEntityList = tripEntity;
-                                AppHelper.tripRoomPlace = new ArrayList<>();
-                                Navigation.findNavController(v).navigate(R.id.tripRoomFragment);
+                                if (tripEntity.getDestination() == null || tripEntity.getDestinationId() == null) {
+                                    Toast.makeText(context, "Trip Details are Not Complete", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    AppHelper.tripEntityList = tripEntity;
+                                    AppHelper.tripRoomPlace = new ArrayList<>();
+                                    Navigation.findNavController(v).navigate(R.id.tripRoomFragment);
+                                }
                             }
                         });
 

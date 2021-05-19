@@ -162,7 +162,7 @@ public class TripRoomFragment extends Fragment {
                         }
                         startActivity(new Intent(getActivity(), StartTrip.class));
                     } else {
-                        if(AppHelper.tripEntityList.getTripLocationTracking().matches("1")){
+                        if(AppHelper.tripEntityList.getTripLocationTracking() != null && AppHelper.tripEntityList.getTripLocationTracking().matches("1")){
                             startActivity(new Intent(getActivity(), StartTrip.class));
 
                         } else
