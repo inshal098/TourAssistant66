@@ -30,6 +30,7 @@ import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -285,7 +286,8 @@ public class TripRoomFragment extends Fragment {
                 });
             }
         }catch (JSONException ex){
-
+            FirebaseCrashlytics.getInstance().recordException(ex);
+            ex.printStackTrace();
         }
 
     }

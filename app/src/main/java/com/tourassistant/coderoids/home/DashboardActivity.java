@@ -140,10 +140,12 @@ public class DashboardActivity extends BaseActivity {
             if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
+                Toast.makeText(instance, "Google Services Not Supported", Toast.LENGTH_SHORT).show();
                 Log.i("FCMRelated", "This device is not supported.");
             }
             return false;
-        }
+        } else
+            Toast.makeText(instance, "Google Services Not Supported", Toast.LENGTH_SHORT).show();
         return true;
     }
 

@@ -135,7 +135,8 @@ public class FCMPushNotificationService extends FirebaseMessagingService {
         FireBaseRegistration fireBaseRegistration = new FireBaseRegistration();
         fireBaseRegistration.setToken(newToken);
         fireBaseRegistration.setTimeinMIllis(System.currentTimeMillis()+"");
-        rootRef.collection("RegistrationUserId").document(firebaseUser.getUid()).set(fireBaseRegistration);
+        if(firebaseUser != null && firebaseUser.getUid() != null)
+            rootRef.collection("RegistrationUserId").document(firebaseUser.getUid()).set(fireBaseRegistration);
     }
 
 
