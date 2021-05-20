@@ -224,28 +224,29 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
     }
 
     private void startWeatherForecasting() {
+        if(destination != null) {
+            new WeatherManager(getResources().getString(R.string.weather_forecast_id)).getCurrentWeatherByCoordinates(
+                    destination.latitude, // latitude
+                    destination.longitude, // longitude
+                    new WeatherManager.CurrentWeatherHandler() {
+                        @Override
+                        public void onReceivedCurrentWeather(WeatherManager manager, Weather weather) {
+                            // RainInformation rainInformation = weather1.getRain();
+                            cityDest.setText(weather.getNavigation().getLocationName());
+                            Temperature temperature = weather.getTemperature().getCurrent();
+                            Double celcius = temperature.getValue(TemperatureUnit.CELCIUS);
+                            destTemperatureField.setText(String.format("%.1f", celcius) + (char) 0x00B0 + "C");
+                            detailsFieldDest.setText("Humidity \n" + weather.getAtmosphere().getHumidityPercentage() + "");
+                            manageWeaherIcon(weather, currentWeatherIcon);
+                        }
 
-        new WeatherManager(getResources().getString(R.string.weather_forecast_id)).getCurrentWeatherByCoordinates(
-                destination.latitude, // latitude
-                destination.longitude, // longitude
-                new WeatherManager.CurrentWeatherHandler() {
-                    @Override
-                    public void onReceivedCurrentWeather(WeatherManager manager, Weather weather) {
-                        // RainInformation rainInformation = weather1.getRain();
-                        cityDest.setText(weather.getNavigation().getLocationName());
-                        Temperature temperature = weather.getTemperature().getCurrent();
-                        Double celcius = temperature.getValue(TemperatureUnit.CELCIUS);
-                        destTemperatureField.setText(String.format("%.1f", celcius) + (char) 0x00B0+"C");
-                        detailsFieldDest.setText("Humidity \n"+weather.getAtmosphere().getHumidityPercentage()+"");
-                        manageWeaherIcon(weather,currentWeatherIcon);
+                        @Override
+                        public void onFailedToReceiveCurrentWeather(WeatherManager manager) {
+                            // Handle error
+                        }
                     }
-
-                    @Override
-                    public void onFailedToReceiveCurrentWeather(WeatherManager manager) {
-                        // Handle error
-                    }
-                }
-        );
+            );
+        }
 
         new WeatherManager(getResources().getString(R.string.weather_forecast_id)).getCurrentWeatherByCoordinates(
                latitude, // latitude
@@ -294,12 +295,15 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
         map.getUiSettings().setRotateGesturesEnabled(true);
         map.getUiSettings().setZoomGesturesEnabled(true);
         currentLocation = new LatLng(latitude, longitude);
-        destination = AppHelper.tripRoomPlace.get(0).getLatLng();
+        if(AppHelper.tripRoomPlace != null && AppHelper.tripRoomPlace.size()>0 && AppHelper.tripRoomPlace.get(0) != null)
+            destination = AppHelper.tripRoomPlace.get(0).getLatLng();
 
         marker = new MarkerOptions().position(currentLocation).title("Address");
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        marker2 = new MarkerOptions().position(destination).title("Address");
-        marker2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+        if(destination != null) {
+            marker2 = new MarkerOptions().position(destination).title("Address");
+            marker2.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
+        }
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(marker.getPosition());
         builder.include(marker2.getPosition());
@@ -325,21 +329,23 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
     }
 
     private void startNavigating() {
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destination.latitude + "," + destination.longitude);
-        Log.v("My Point", "" + gmmIntentUri.toString());
-        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        mapIntent.setPackage("com.google.android.apps.maps");
-        if (mapIntent.resolveActivity(getPackageManager()) != null)
-            startActivity(mapIntent);
-
+        if(destination != null) {
+            Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destination.latitude + "," + destination.longitude);
+            Log.v("My Point", "" + gmmIntentUri.toString());
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+            mapIntent.setPackage("com.google.android.apps.maps");
+            if (mapIntent.resolveActivity(getPackageManager()) != null)
+                startActivity(mapIntent);
+        }
     }
 
     private void addMarker() {
         // Checks, whether start and end locations are captured
         map.addMarker(marker);
         markerPoints.add(currentLocation);
-        map.addMarker(marker2);
-        markerPoints.add(destination);
+        if(destination != null) {
+            map.addMarker(marker2);
+            markerPoints.add(destination);
 
         // Checks, whether start and end locations are captured
         if (markerPoints.size() >= 2) {
@@ -350,6 +356,7 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
             DownloadTask downloadTask = new DownloadTask();
             // Start downloading json data from Google Directions
             downloadTask.execute(url);
+        }
         }
     }
 
