@@ -4,11 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="230dp"
     android:layout_height="210dp"
+    android:layout_margin="5dp"
     android:background="@color/white">
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_height="190dp"
         android:layout_margin="10dp"
         android:backgroundTint="@color/white"
         app:cardCornerRadius="8dp"
@@ -35,6 +36,7 @@
             android:layout_height="80dp"
             android:layout_centerInParent="true"
             android:id="@+id/iv_destingation"
+            android:scaleType="fitXY"
             android:layout_below="@+id/destination_tag"
             />
             <androidx.appcompat.widget.AppCompatRatingBar
@@ -45,21 +47,39 @@
                 android:numStars="5"
                 android:layout_centerInParent="true"
                 android:stepSize="0.1"
-                android:padding="10dp"
+                android:padding="6dp"
                 android:progressTint="@color/black"
                 android:isIndicator="true"
                 android:layout_below="@+id/iv_destingation"/>
-
-            <TextView
-                android:layout_width="130dp"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
                 android:layout_centerInParent="true"
                 android:gravity="center"
+                android:layout_below="@+id/rating">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:gravity="center"
                 android:id="@+id/tv_bussnes"
+                android:layout_centerVertical="true"
                 android:textStyle="bold"
                 android:textColor="@color/black"
-                android:layout_below="@+id/rating"/>
+               />
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:gravity="center"
+                android:layout_centerVertical="true"
+                android:id="@+id/tv_edit_dest"
+                android:textStyle="bold"
+                android:text="Edit"
+                android:layout_toEndOf="@+id/tv_bussnes"
+                android:textColor="@color/black"
+                />
+            </RelativeLayout>
         </RelativeLayout>
     </com.google.android.material.card.MaterialCardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

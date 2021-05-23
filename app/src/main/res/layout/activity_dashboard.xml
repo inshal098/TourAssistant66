@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_gravity="center"
-            android:background="@color/purple"
+            android:background="@color/appTheme"
             android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:fontFamily="@font/arimo_bold_italic"
+                android:fontFamily="@font/the_girl_next_door"
                 android:text="Tour Assistant"
                 android:textColor="@color/white"
                 android:textSize="25sp"
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_gravity="bottom"
-            app:backgroundTint="@color/purple"
+            app:backgroundTint="@color/black"
             app:menu="@menu/bottom_menu_nav" />
     </RelativeLayout>
 

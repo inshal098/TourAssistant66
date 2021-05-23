@@ -80,6 +80,7 @@
                 android:padding="10dp"
                 android:text="Add Preferences"
                 android:textColor="@color/black"
+                android:fontFamily="@font/the_girl_next_door"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
@@ -102,9 +103,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/cell_filled"
-            android:fontFamily="@font/arimo"
+            android:fontFamily="@font/the_girl_next_door"
             android:gravity="center"
-            android:padding="10dp"
+            android:padding="5dp"
             android:text="Plan Your Next Adventure Now"
             android:textColor="@color/white"
             android:textStyle="bold" />
@@ -144,6 +145,7 @@
                 android:padding="5dp"
                 android:text="Top Destinations"
                 android:textColor="@color/black"
+                android:fontFamily="@font/the_girl_next_door"
                 android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -164,6 +166,7 @@
                 android:layout_marginStart="10dp"
                 android:padding="5dp"
                 android:text="Trips Based On Your Preferences"
+                android:fontFamily="@font/the_girl_next_door"
                 android:textColor="@color/black"
                 android:textStyle="bold" />
 
@@ -175,17 +178,17 @@
                 android:layout_weight="1"
                 android:fontFamily="@font/arimo"
                 android:gravity="center"
-                android:padding="10dp"
+                android:padding="5dp"
                 android:text=""
                 android:textColor="@color/black"
                 android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/public_trips"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/prefs"
-                android:layout_margin="10dp" />
+                android:layout_margin="5dp" />
 
 
         </RelativeLayout>
@@ -198,7 +201,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
-        android:backgroundTint="@color/purple"
+        android:backgroundTint="@color/appTheme2"
         android:text="Plan A Trip"
         android:textColor="@color/white"
         app:icon="@drawable/ic_add"

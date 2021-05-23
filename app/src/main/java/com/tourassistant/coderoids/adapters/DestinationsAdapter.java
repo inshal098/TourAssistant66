@@ -71,11 +71,13 @@ public class DestinationsAdapter extends RecyclerView.Adapter<DestinationsAdapte
                 Double aDouble = Double.parseDouble(rating);
                 viewHolder.ratingBar.setRating(aDouble.floatValue());
                 viewHolder.mtvBussinessStatus.setBackground(context.getResources().getDrawable(R.drawable.cell));
-                if (type.matches("D"))
+                if (type.matches("D")) {
                     viewHolder.mtvBussinessStatus.setText("Add to Trip");
-                else
+                    viewHolder.tvEditDest.setVisibility(View.VISIBLE);
+                } else {
                     viewHolder.mtvBussinessStatus.setText("Plan A Trip");
-
+                    viewHolder.tvEditDest.setVisibility(View.GONE);
+                }
                 viewHolder.mtvBussinessStatus.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -116,6 +118,15 @@ public class DestinationsAdapter extends RecyclerView.Adapter<DestinationsAdapte
                         }
                     }
                 });
+
+                int finalPosition = position;
+                viewHolder.tvEditDest.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AppHelper.editDestModel = places.get(finalPosition);
+                        Navigation.findNavController(v).navigate(R.id.editDestinationFragment); }
+                });
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -130,7 +141,7 @@ public class DestinationsAdapter extends RecyclerView.Adapter<DestinationsAdapte
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        MaterialTextView mtvDestinationName, mtvBussinessStatus;
+        MaterialTextView mtvDestinationName, mtvBussinessStatus ,tvEditDest;
         ShapeableImageView siV;
         AppCompatRatingBar ratingBar;
         MaterialButton btnFollow;
@@ -141,6 +152,7 @@ public class DestinationsAdapter extends RecyclerView.Adapter<DestinationsAdapte
             siV = itemView.findViewById(R.id.iv_destingation);
             ratingBar = itemView.findViewById(R.id.rating);
             mtvBussinessStatus = itemView.findViewById(R.id.tv_bussnes);
+            tvEditDest = itemView.findViewById(R.id.tv_edit_dest);
         }
     }
 }

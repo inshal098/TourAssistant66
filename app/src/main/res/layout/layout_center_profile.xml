@@ -10,6 +10,7 @@
 
         <!-- ********************Middle Section*************************** -->
 
+
         <RelativeLayout
             android:id="@+id/relLayout2"
             android:layout_width="match_parent"
@@ -27,8 +28,8 @@
 
                 <RelativeLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="25dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
                     android:layout_weight="25">
 
                     <de.hdodenhof.circleimageview.CircleImageView
@@ -103,62 +104,58 @@
                 android:id="@+id/relLayout3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/linLayout2"
-                android:layout_marginBottom="50dp">
+                android:layout_below="@+id/linLayout2">
 
-                <RelativeLayout
-                    android:id="@+id/intrest_tag"
+                <ImageButton
+                    android:id="@+id/addIntrest"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerInParent="true"
+                    android:backgroundTint="@color/white"
+                    android:src="@android:drawable/ic_menu_add"
+                    android:tint="@color/black"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/prefs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:fontFamily="@font/arimo"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:text=""
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/relLayout3"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/pt_"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="10dp"
-                        android:text="Interest"
+                        android:text="Portfolio"
                         android:textColor="@color/black"
-                        android:textSize="15sp"
                         android:textStyle="bold" />
 
-                    <ImageButton
-                        android:id="@+id/addIntrest"
-                        android:layout_width="wrap_content"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_news_feed"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerInParent="true"
-                        android:backgroundTint="@color/white"
-                        android:src="@android:drawable/ic_menu_add"
-                        android:tint="@color/black"
-                        android:visibility="gone" />
-                </RelativeLayout>
-
-                <GridView
-                    android:id="@+id/intests"
-                    android:layout_width="match_parent"
-                    android:layout_height="120dp"
-                    android:layout_below="@+id/intrest_tag"
-                    android:gravity="center"
-                    android:horizontalSpacing="1dp"
-                    android:numColumns="2"
-                    android:stretchMode="columnWidth"
-                    android:verticalSpacing="1dp"/>
-
-            </RelativeLayout>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/relLayout3"
-                android:padding="10dp"
-                android:id="@+id/pt_"
-                android:textColor="@color/black"
-                android:text="Portfolio"/>
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_news_feed"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/pt_"
-                android:visibility="visible"/>
+                        android:visibility="visible" />
+                </LinearLayout>
+            </ScrollView>
         </RelativeLayout>
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -178,15 +175,14 @@
             android:id="@+id/_chat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:scaleType="center"
-            android:backgroundTint="@color/orange"
+            android:layout_alignParentBottom="true"
             android:layout_margin="20dp"
+            android:backgroundTint="@color/orange"
+            android:scaleType="center"
             android:src="@drawable/ic_messenger"
-            app:rippleColor="@color/orange"
             android:tint="@color/white"
-             />
+            app:rippleColor="@color/orange" />
     </RelativeLayout>
 
 </merge>

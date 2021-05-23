@@ -335,11 +335,6 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             helper.setBearing("" + location.getBearing());
             helper.setGpsCoordinate(location.getLatitude() + "," + location.getLongitude());
             helper.setLocation(location);
-            if(helper.getLatitude() != null && !helper.getLatitude().matches("")) {
-                Toast.makeText(getApplicationContext(), "Coordinates : " +helper.getLatitude(),Toast.LENGTH_SHORT).show();
-            } else
-                Toast.makeText(getApplicationContext(), "No Coordinates To Fetch",Toast.LENGTH_SHORT).show();
-
         }
     }
 

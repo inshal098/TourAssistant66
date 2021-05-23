@@ -10,67 +10,43 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.tourassistant.coderoids.R;
-import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.models.NewsFeed;
-import com.tourassistant.coderoids.models.Profile;
 
-import java.util.Date;
 import java.util.List;
 
-public class NewsListingAdapter extends RecyclerView.Adapter<NewsListingAdapter.ViewHolder> {
+public class PortfolioAdapter extends RecyclerView.Adapter<PortfolioAdapter.ViewHolder> {
     Context context;
-    PlacesClient placesClient;
     LayoutInflater inflter;
-    List<List<PhotoMetadata>> metadata;
-    String[] destinationStringArr;
     List<DocumentSnapshot> documentSnapshots;
 
-    public NewsListingAdapter(Context applicationContext, List<DocumentSnapshot> documentSnapshots) {
+    public PortfolioAdapter(Context applicationContext, List<DocumentSnapshot> documentSnapshots) {
         this.context = applicationContext;
-        this.placesClient = placesClient;
-        this.metadata = metadata;
-        this.destinationStringArr = destinationStringArr;
         this.documentSnapshots = documentSnapshots;
-        inflter = (LayoutInflater.from(applicationContext));
     }
 
     @NonNull
     @Override
-    public NewsListingAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int position) {
+    public PortfolioAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int position) {
         View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.row_news_list, viewGroup, false);
-        return new NewsListingAdapter.ViewHolder(v);
+                .inflate(R.layout.row_portfolio_, viewGroup, false);
+        return new PortfolioAdapter.ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final NewsListingAdapter.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(@NonNull final PortfolioAdapter.ViewHolder viewHolder, int position) {
         position = viewHolder.getAdapterPosition();
         try {
             NewsFeed newsFeed = documentSnapshots.get(position).toObject(NewsFeed.class);
-            Profile profile = AppHelper.getUserProfileObj(newsFeed.getUploadedById());
-            viewHolder.title.setText(newsFeed.getTitle());
-            viewHolder.newsDescription.setText(newsFeed.getDescription());
-            viewHolder.postedBy.setText(""+newsFeed.getUserName());
-            long timieInMillis = Long.parseLong(newsFeed.getDateInMillis());
-            String duration = durationFromNow(timieInMillis);
-            viewHolder.newsTime.setText(duration +" ago");
             if (newsFeed.getNewsThumbNail() != null) {
                 byte[] bytes = newsFeed.getNewsThumbNail().toBytes();
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 viewHolder.ivPlaceImage.setImageBitmap(bmp);
-            }
-
-            if (profile != null && profile.getProfileImage() != null) {
-                byte[] bytes = profile.getProfileImage().toBytes();
-                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                viewHolder.profileImage.setImageBitmap(bmp);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,19 +102,13 @@ public class NewsListingAdapter extends RecyclerView.Adapter<NewsListingAdapter.
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title, newsDescription, newsTime, postedBy;
-        ImageView ivPlaceImage ,profileImage;
-
+        ImageView ivPlaceImage;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivPlaceImage = itemView.findViewById(R.id.iv_news_image);
-            profileImage = itemView.findViewById(R.id.profile_image);
-            title = itemView.findViewById(R.id.news_title);
-            newsDescription = itemView.findViewById(R.id.news_description);
-            newsTime = itemView.findViewById(R.id.news_time);
-            postedBy = itemView.findViewById(R.id.posted_by);
+            ivPlaceImage = itemView.findViewById(R.id.iv_portf_image);
         }
     }
 }
+
 
 

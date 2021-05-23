@@ -139,8 +139,6 @@ public class ReportHazard extends AppCompatActivity {
 
     private void uploadNews() {
         try {
-
-
             ProgressDialog progressDialog = new ProgressDialog(this);
             progressDialog.setMessage("Please Wait...");
             progressDialog.setIndeterminate(true);
@@ -159,6 +157,7 @@ public class ReportHazard extends AppCompatActivity {
                 newsFeed.setNewsThumbNail(profileImageBlob);
                 newsFeed.setGeoPoint(point);
                 newsFeed.setDateInMillis(System.currentTimeMillis() + "");
+                newsFeed.setUploadedById(AppHelper.currentProfileInstance.getUserId());
                 if (AppHelper.tripEntityList != null && AppHelper.tripEntityList.getFirebaseId() != null) {
                     newsFeed.setTripId(AppHelper.tripEntityList.getFirebaseId());
                     rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("NewsFeed").document().set(newsFeed);

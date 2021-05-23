@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="200dp"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_trip"
-        android:layout_width="match_parent"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:backgroundTint="@color/white"
@@ -34,7 +34,7 @@
                 android:text="Created By"
                 android:textAlignment="center"
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <com.google.android.material.textview.MaterialTextView
@@ -45,7 +45,7 @@
                 android:text="Trips Name"
                 android:padding="5dp"
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
 
@@ -56,7 +56,7 @@
                 android:layout_below="@+id/tripName"
                 android:text="Trips Name"
                 android:textColor="@color/black"
-                android:textSize="16sp"
+                android:textSize="11sp"
                 android:padding="5dp"
                 android:textStyle="bold" />
             <Button
@@ -64,8 +64,9 @@
                 android:layout_height="wrap_content"
                 android:text="Join Trip"
                 android:id="@+id/join_trip"
+                android:textSize="13sp"
                 android:textColor="@color/white"
-                android:backgroundTint="@color/purple"
+                android:backgroundTint="@color/appTheme2"
                 android:layout_below="@+id/start_date"/>
         </RelativeLayout>
 

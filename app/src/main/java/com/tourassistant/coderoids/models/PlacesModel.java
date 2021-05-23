@@ -16,6 +16,7 @@ public class PlacesModel {
     private GeoPoint destinationCoordinates;
     private String destinationAddress;
     private Blob blob;
+    private String tripTags;
    // private Bitmap [] bitmaps;
 
     public String getDestinationName() {
@@ -88,6 +89,14 @@ public class PlacesModel {
 
     public void setBlob(Blob blob) {
         this.blob = blob;
+    }
+
+    public String getTripTags() {
+        return tripTags;
+    }
+
+    public void setTripTags(String tripTags) {
+        this.tripTags = tripTags;
     }
 
     /*   public Bitmap[] getBitmaps() {

@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.tourassistant.coderoids.models.PlacesModel;
 import com.tourassistant.coderoids.models.Profile;
 import com.tourassistant.coderoids.plantrip.tripdb.TripEntity;
 
@@ -70,6 +71,7 @@ public class AppHelper {
     public static ArrayList<DocumentSnapshot> groupChatRecieversInstance;
     public static String currentChatThreadId;
     public static String inProgressTripId;
+    public static PlacesModel editDestModel;
     private static AppHelper instance = null;
     public static Context context;
     public static TripEntity tripEntityList = new TripEntity();
@@ -219,6 +221,25 @@ public class AppHelper {
         return formatter.format(calendar.getTime());
     }
 
+    public static String getUserIntrests() {
+        String interest = "";
+        if(AppHelper.interestUser != null && !AppHelper.interestUser.toString().matches("")){
+            for(int i=0; i<AppHelper.interestUser.length();i++){
+                try {
+                    JSONObject jsonObject = AppHelper.interestUser.getJSONObject(i);
+                    if(interest.matches(""))
+                        interest = jsonObject.getString("interestName");
+                    else
+                        interest = interest +" | " + jsonObject.getString("interestName");
+                } catch (JSONException ex){
+                    ex.printStackTrace();
+                }
+
+            }
+        }
+        return interest;
+    }
+
 
     public File createFolder(String subDirectory, String fileName, Bitmap imageToSave, Activity activity, String customerID, boolean isHighRes) {
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
@@ -357,6 +378,18 @@ public class AppHelper {
         } else {
             return false;
         }
+    }
+
+    public static Profile getUserProfileObj(String id){
+        for (int i = 0; i < AppHelper.allUsers.size(); i++) {
+            if(id.matches(AppHelper.currentProfileInstance.getUserId()))
+                return  AppHelper.currentProfileInstance;
+            if (id.matches(AppHelper.allUsers.get(i).getId())) {
+                Profile profile = AppHelper.allUsers.get(i).toObject(Profile.class);
+                return profile;
+            }
+        }
+        return new Profile();
     }
 
 }

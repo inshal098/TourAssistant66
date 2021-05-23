@@ -103,7 +103,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
         MaterialCardView mCTrip = view.findViewById(R.id.card_trip);
         rvPublicTrips = view.findViewById(R.id.public_trips);
         llm = new LinearLayoutManager(getActivity());
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
+        llm.setOrientation(LinearLayoutManager.HORIZONTAL);
 
         savedDestinationLLM = new LinearLayoutManager(getActivity());
         savedDestinationLLM.setOrientation(LinearLayoutManager.HORIZONTAL);
@@ -168,22 +168,8 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
                 showAlertDialog();
             }
         });
-        if(AppHelper.interestUser != null && !AppHelper.interestUser.toString().matches("")){
-            String interest = "";
-            for(int i=0; i<AppHelper.interestUser.length();i++){
-                try {
-                    JSONObject jsonObject = AppHelper.interestUser.getJSONObject(i);
-                    if(interest.matches(""))
-                        interest = jsonObject.getString("interestName");
-                    else
-                        interest = interest +" | " + jsonObject.getString("interestName");
-                    prefs.setText(interest);
-                } catch (JSONException ex){
-                    ex.printStackTrace();
-                }
+        prefs.setText(AppHelper.getUserIntrests());
 
-            }
-        }
         fetchDestinations();
     }
 

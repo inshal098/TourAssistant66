@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -38,6 +39,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -46,6 +48,7 @@ import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.InterestSelectionAdapter;
 import com.tourassistant.coderoids.adapters.IntrestsAdapter;
 import com.tourassistant.coderoids.adapters.NewsListingAdapter;
+import com.tourassistant.coderoids.adapters.PortfolioAdapter;
 import com.tourassistant.coderoids.chatmodule.ChatParentActivity;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.models.Profile;
@@ -63,16 +66,13 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileFragment extends Fragment {
     TextView tvEditProfile;
-    TextView tvFollowingCount, tvFollowersCount, tvPostCount, tvName,tvWebsite,tvDescription ,tvTrackingState;
+    TextView tvFollowingCount, tvFollowersCount, tvPostCount, tvName,tvWebsite,tvDescription ,tvTrackingState ,tvIntrest;
     ImageButton ibAddPreferences;
     SwitchMaterial smTrackState;
     CircleImageView circleImageView;
     ProgressDialog dialog;
     GridView intests;
     ActionBar actionBar;
-    JSONArray intrestArray = new JSONArray();
-    IntrestsAdapter intrestsAdapter;
-    List<DocumentSnapshot> interests;
     private boolean rowState[] = new boolean[0];
     ExtendedFloatingActionButton actionButton;
     FloatingActionButton floatingChatIc;
@@ -113,8 +113,8 @@ public class ProfileFragment extends Fragment {
         smTrackState = v.findViewById(R.id.sw_tracking_state);
         tvTrackingState = v.findViewById(R.id.tracking_state_tv);
         actionButton = v.findViewById(R.id.create_a_post);
+        tvIntrest = v.findViewById(R.id.prefs);
         dialog = new ProgressDialog(getActivity());
-        intests = v.findViewById(R.id.intests); // init GridView
         actionBar = ((AppCompatActivity)
                 requireActivity()).getSupportActionBar();
 
@@ -127,12 +127,12 @@ public class ProfileFragment extends Fragment {
         if(AppHelper.currentProfileInstance != null) {
 
             if(prefLogin.getString("userTracking","0").matches("1")){
-                tvTrackingState.setText("Enabled , Your Location is Being Tracked");
+                tvTrackingState.setText("Location is Being Tracked");
                 tvTrackingState.setBackgroundColor(getActivity().getResources().getColor(R.color.green));
                 smTrackState.setChecked(true);
             } else {
                 smTrackState.setChecked(false);
-                tvTrackingState.setText("Disabled , Your Location Tracking is Off");
+                tvTrackingState.setText("Location Tracking is Off");
                 tvTrackingState.setBackgroundColor(getActivity().getResources().getColor(R.color.red));
             }
         }
@@ -167,20 +167,16 @@ public class ProfileFragment extends Fragment {
                 tvFollowingCount.setText(profileList.getFollowing());
                 tvWebsite.setText(profileList.getWebsite());
                 tvDescription.setText(profileList.getAboutDescription());
-                if (profileList.getInterests() != null && !profileList.getInterests().matches("")) {
-                    JSONArray jsonArray = new JSONArray(profileList.getInterests());
-                    intrestArray = jsonArray;
-                    intrestsAdapter = new IntrestsAdapter(getActivity(), intrestArray);
-                    intests.setAdapter(intrestsAdapter);
-                }
+                tvIntrest.setText(AppHelper.getUserIntrests());
                 if (profileList.getProfileImage() != null && !profileList.getProfileImage().toString().matches("")) {
                     byte[] bytes = profileList.getProfileImage().toBytes();
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     circleImageView.setImageBitmap(bmp);
                 }
             }
-        } catch (JSONException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(ex);
         }
 
 
@@ -215,9 +211,9 @@ public class ProfileFragment extends Fragment {
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                         if (documentSnapshots != null) {
                             documentSnapshots.size();
-                            NewsListingAdapter newsListingAdapter = new NewsListingAdapter(getContext(), documentSnapshots);
+                            PortfolioAdapter newsListingAdapter = new PortfolioAdapter(getContext(), documentSnapshots);
                             rvNews.setAdapter(newsListingAdapter);
-                            rvNews.setLayoutManager(llmNews);
+                            rvNews.setLayoutManager(new GridLayoutManager(getContext(), 3));
                         }
                     }
                 }
