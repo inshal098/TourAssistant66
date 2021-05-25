@@ -139,21 +139,45 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/pt_"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:text="Portfolio"
-                        android:textColor="@color/black"
-                        android:textStyle="bold" />
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:id="@+id/pt_"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:layout_weight="1"
+                            android:padding="10dp"
+                            android:text="Your Uploads"
+                            android:background="@color/appTheme2"
+                            android:textColor="@color/white"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/pt_trip"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:padding="10dp"
+                            android:gravity="center"
+                            android:text="Portfolio"
+                            android:textColor="@color/black"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_news_feed"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:visibility="visible" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_trip_photos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:visibility="gone" />
                 </LinearLayout>
             </ScrollView>
         </RelativeLayout>

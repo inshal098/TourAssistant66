@@ -19,6 +19,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -39,8 +40,10 @@ public class EditDestinationFragment extends Fragment {
     List<DocumentSnapshot> interests;
     private boolean rowState[] = new boolean[0];
     LinearLayoutManager llm;
-    TextInputEditText etDestinationName ,etDestinationAddress;
+    TextInputEditText etDestinationName, etDestinationAddress;
     Button btnSave;
+    JSONArray destIntrest = new JSONArray();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,14 +69,12 @@ public class EditDestinationFragment extends Fragment {
 
 
     private void fetchIntrest() {
-        JSONArray destIntrest = new JSONArray();
         try {
             if (AppHelper.editDestModel != null && !AppHelper.editDestModel.getTripTags().matches("")) {
-                destIntrest = new JSONArray(AppHelper.editDestModel);
-                etDestinationName.setText(AppHelper.editDestModel.getDestinationName());
-                etDestinationAddress.setText(AppHelper.editDestModel.getDestinationAddress());
+                destIntrest = new JSONArray(AppHelper.editDestModel.getTripTags());
             }
-            JSONArray finalDestIntrest = destIntrest;
+            etDestinationName.setText(AppHelper.editDestModel.getDestinationName());
+            etDestinationAddress.setText(AppHelper.editDestModel.getDestinationAddress());
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -87,7 +88,7 @@ public class EditDestinationFragment extends Fragment {
                                 interests = task.getResult().getDocuments();
                                 rowState = new boolean[interests.size()];
                                 // checkTripState();
-                                InterestSelectionRecyclerView intrestsAdapter = new InterestSelectionRecyclerView(getActivity(), interests, rowState, finalDestIntrest);
+                                InterestSelectionRecyclerView intrestsAdapter = new InterestSelectionRecyclerView(getActivity(), interests, rowState, destIntrest);
                                 interstsGrid.setAdapter(intrestsAdapter);
                                 interstsGrid.setLayoutManager(llm);
                             }
@@ -99,30 +100,9 @@ public class EditDestinationFragment extends Fragment {
             btnSave.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                        FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-                        rootRef.collection("Destinations").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                if (task.isComplete()) {
-                                    List<DocumentSnapshot> placesNew = task.getResult().getDocuments();
-                                  /*  fetchedPlaces = new ArrayList<>();
-                                    for (int i = 0; i < placesNew.size(); i++) {
-                                        DocumentSnapshot documentSnapshot = placesNew.get(i);
-                                        fetchedPlaces.add(documentSnapshot.toObject(PlacesModel.class));
-                                    }
-                                    if (fetchedPlaces.size() > 0) {
-                                        rowState = new boolean[fetchedPlaces.size()];
-                                        DestinationsAdapter destinatonAdapter = new DestinationsAdapter(getActivity(), fetchedPlaces, rowState,"D");
-                                        savedDestinations.setAdapter(destinatonAdapter);
-                                        savedDestinations.setLayoutManager(savedDestinationLLM);
-                                    }*/
-
-                                }
-//                                if (progressDialog.isShowing())
-//                                    progressDialog.dismiss();
-                            }
-                        });
-
+                    FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                    DocumentReference reference = rootRef.collection("Destinations").document(AppHelper.editDestModel.getDestinationId());
+                    reference.update("tripTags", destIntrest+"");
                 }
             });
         } catch (JSONException ex) {

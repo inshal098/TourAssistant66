@@ -1,22 +1,25 @@
 package com.tourassistant.coderoids.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.libraries.places.api.model.PhotoMetadata;
-import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.tourassistant.coderoids.R;
-import com.tourassistant.coderoids.models.NewsFeed;
+import com.tourassistant.coderoids.helpers.AppHelper;
+import com.tourassistant.coderoids.home.TripPhotosActivity;
+import com.tourassistant.coderoids.models.NewsFeedModel;
 
 import java.util.List;
 
@@ -34,7 +37,7 @@ public class PortfolioAdapter extends RecyclerView.Adapter<PortfolioAdapter.View
     @Override
     public PortfolioAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int position) {
         View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.row_portfolio_, viewGroup, false);
+                .inflate(R.layout.row_portfolio, viewGroup, false);
         return new PortfolioAdapter.ViewHolder(v);
     }
 
@@ -42,58 +45,40 @@ public class PortfolioAdapter extends RecyclerView.Adapter<PortfolioAdapter.View
     public void onBindViewHolder(@NonNull final PortfolioAdapter.ViewHolder viewHolder, int position) {
         position = viewHolder.getAdapterPosition();
         try {
-            NewsFeed newsFeed = documentSnapshots.get(position).toObject(NewsFeed.class);
-            if (newsFeed.getNewsThumbNail() != null) {
-                byte[] bytes = newsFeed.getNewsThumbNail().toBytes();
-                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                viewHolder.ivPlaceImage.setImageBitmap(bmp);
-            }
+            FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+            int finalPosition = position;
+            rootRef.collection("PublicTrips").document(documentSnapshots.get(position).getId()).collection("NewsFeed").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            List<DocumentSnapshot> newsList = task.getResult().getDocuments();
+                            if(newsList != null){
+                                viewHolder.imagesCount.setText(newsList.size() +"+");
+                                viewHolder.ivTripTitle.setText(documentSnapshots.get(finalPosition).getString("tripTitle"));
+                            }
+                        }
+                    }
+                });
+
+            viewHolder.materialCardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    rootRef.collection("PublicTrips").document(documentSnapshots.get(finalPosition).getId()).collection("NewsFeed").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                List<DocumentSnapshot> newsList = task.getResult().getDocuments();
+                               AppHelper.newsListCurrent = newsList;
+                               context.startActivity(new Intent(context, TripPhotosActivity.class));
+                            }
+                        }
+                    });
+                }
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static String durationFromNow(long currentTime) {
-
-        long different = System.currentTimeMillis() - currentTime;
-
-        long secondsInMilli = 1000;
-        long minutesInMilli = secondsInMilli * 60;
-        long hoursInMilli = minutesInMilli * 60;
-        long daysInMilli = hoursInMilli * 24;
-
-        long elapsedDays = different / daysInMilli;
-        different = different % daysInMilli;
-
-        long elapsedHours = different / hoursInMilli;
-        different = different % hoursInMilli;
-
-        long elapsedMinutes = different / minutesInMilli;
-        different = different % minutesInMilli;
-
-        long elapsedSeconds = different / secondsInMilli;
-
-        String output = "";
-        if (elapsedDays > 0) {
-            if(elapsedDays >1)
-                output += elapsedDays + " days ";
-            else
-                output += elapsedDays + " day ";
-
-            return output;
-        }
-        if (elapsedDays > 0 || elapsedHours > 0) {
-            output += elapsedHours + " hours ";
-            return output;
-        }
-        if (elapsedHours > 0 || elapsedMinutes > 0) {
-            output += elapsedMinutes + " minutes ";
-            return output;
-
-        }
-        if (elapsedMinutes > 0 || elapsedSeconds > 0) output += elapsedSeconds + " seconds";
-
-        return output;
     }
 
     @Override
@@ -102,13 +87,17 @@ public class PortfolioAdapter extends RecyclerView.Adapter<PortfolioAdapter.View
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivPlaceImage;
+        TextView ivTripTitle, imagesCount;
+        MaterialCardView materialCardView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivPlaceImage = itemView.findViewById(R.id.iv_portf_image);
+            ivTripTitle = itemView.findViewById(R.id.trip_title);
+            imagesCount = itemView.findViewById(R.id.iv_portf_image);
+            materialCardView = itemView.findViewById(R.id.card_trip);
         }
     }
 }
+
 
 
 

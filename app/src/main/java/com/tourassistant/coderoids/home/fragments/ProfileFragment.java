@@ -1,18 +1,15 @@
 package com.tourassistant.coderoids.home.fragments;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
@@ -23,50 +20,37 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.tourassistant.coderoids.R;
-import com.tourassistant.coderoids.adapters.InterestSelectionAdapter;
-import com.tourassistant.coderoids.adapters.IntrestsAdapter;
-import com.tourassistant.coderoids.adapters.NewsListingAdapter;
+import com.tourassistant.coderoids.adapters.PersonalPicturesUploads;
 import com.tourassistant.coderoids.adapters.PortfolioAdapter;
 import com.tourassistant.coderoids.chatmodule.ChatParentActivity;
 import com.tourassistant.coderoids.helpers.AppHelper;
+import com.tourassistant.coderoids.models.NewsFeedModel;
 import com.tourassistant.coderoids.models.Profile;
-import com.tourassistant.coderoids.profilefriends.FriendsProfileActivity;
 import com.tourassistant.coderoids.starttrip.ReportHazard;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileFragment extends Fragment {
     TextView tvEditProfile;
-    TextView tvFollowingCount, tvFollowersCount, tvPostCount, tvName,tvWebsite,tvDescription ,tvTrackingState ,tvIntrest;
+    TextView tvFollowingCount, tvFollowersCount, tvPostCount, tvName, tvWebsite, tvDescription, tvTrackingState, tvIntrest, tvPersonalPictures, tvTripsPicture;
     ImageButton ibAddPreferences;
     SwitchMaterial smTrackState;
     CircleImageView circleImageView;
@@ -78,8 +62,9 @@ public class ProfileFragment extends Fragment {
     FloatingActionButton floatingChatIc;
     SharedPreferences.Editor editorLogin;
     SharedPreferences prefLogin;
-    RecyclerView rvNews;
-    LinearLayoutManager llmNews;
+    RecyclerView rvNews, rvTripPhoto;
+    LinearLayoutManager llmNews, llTripPhoto;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,9 +84,16 @@ public class ProfileFragment extends Fragment {
         editorLogin.apply();
         tvName = v.findViewById(R.id.user_name);
         circleImageView = v.findViewById(R.id.profile_photo);
+        tvPersonalPictures = v.findViewById(R.id.pt_);
+        tvTripsPicture = v.findViewById(R.id.pt_trip);
         rvNews = v.findViewById(R.id.rv_news_feed);
+        rvTripPhoto = v.findViewById(R.id.rv_trip_photos);
         llmNews = new LinearLayoutManager(getContext());
         llmNews.setOrientation(LinearLayoutManager.VERTICAL);
+
+        llTripPhoto = new LinearLayoutManager(getContext());
+        llTripPhoto.setOrientation(LinearLayoutManager.VERTICAL);
+
         floatingChatIc = v.findViewById(R.id._chat);
         tvEditProfile = v.findViewById(R.id.textEditProfile);
         tvFollowersCount = v.findViewById(R.id.tv_followers_count);
@@ -124,9 +116,9 @@ public class ProfileFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigate(R.id.editProfileFragment);
             }
         });
-        if(AppHelper.currentProfileInstance != null) {
+        if (AppHelper.currentProfileInstance != null) {
 
-            if(prefLogin.getString("userTracking","0").matches("1")){
+            if (prefLogin.getString("userTracking", "0").matches("1")) {
                 tvTrackingState.setText("Location is Being Tracked");
                 tvTrackingState.setBackgroundColor(getActivity().getResources().getColor(R.color.green));
                 smTrackState.setChecked(true);
@@ -143,21 +135,21 @@ public class ProfileFragment extends Fragment {
             public void onClick(View v) {
                 FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
                 DocumentReference uidRef = rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId());
-                if(smTrackState.isChecked()){
-                    editorLogin.putString("userTracking" ,"1").apply();
-                    uidRef.update("userTracking","1");
+                if (smTrackState.isChecked()) {
+                    editorLogin.putString("userTracking", "1").apply();
+                    uidRef.update("userTracking", "1");
                     tvTrackingState.setText("Enabled , Your Location is Being Tracked");
                     tvTrackingState.setBackgroundColor(getActivity().getResources().getColor(R.color.green));
                 } else {
-                    uidRef.update("userTracking","0");
-                    editorLogin.putString("userTracking" ,"0").apply();                                                
+                    uidRef.update("userTracking", "0");
+                    editorLogin.putString("userTracking", "0").apply();
                     tvTrackingState.setText("Disabled , Your Location Tracking is Off");
                     tvTrackingState.setBackgroundColor(getActivity().getResources().getColor(R.color.red));
                 }
             }
         });
         try {
-            if(AppHelper.currentProfileInstance != null) {
+            if (AppHelper.currentProfileInstance != null) {
                 Profile profileList = AppHelper.currentProfileInstance;
                 if (profileList.getUserName() != null)
                     actionBar.setTitle(profileList.getUserName());
@@ -167,7 +159,7 @@ public class ProfileFragment extends Fragment {
                 tvFollowingCount.setText(profileList.getFollowing());
                 tvWebsite.setText(profileList.getWebsite());
                 tvDescription.setText(profileList.getAboutDescription());
-                tvIntrest.setText(AppHelper.getUserIntrests());
+                tvIntrest.setText(AppHelper.getUserIntrests(AppHelper.interestUser));
                 if (profileList.getProfileImage() != null && !profileList.getProfileImage().toString().matches("")) {
                     byte[] bytes = profileList.getProfileImage().toBytes();
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
@@ -195,14 +187,43 @@ public class ProfileFragment extends Fragment {
         floatingChatIc.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            startActivity(new Intent(getActivity(), ChatParentActivity.class).putExtra("type" ,"Profile"));
+                startActivity(new Intent(getActivity(), ChatParentActivity.class).putExtra("type", "Profile"));
             }
         });
         fetchUserPosts();
+
+        tvPersonalPictures.setBackgroundColor(getActivity().getResources().getColor(R.color.appTheme2));
+        tvPersonalPictures.setTextColor(getActivity().getResources().getColor(R.color.white));
+        rvNews.setVisibility(View.VISIBLE);
+        rvTripPhoto.setVisibility(View.GONE);
+        tvPersonalPictures.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvPersonalPictures.setBackgroundColor(getActivity().getResources().getColor(R.color.appTheme2));
+                tvPersonalPictures.setTextColor(getActivity().getResources().getColor(R.color.white));
+
+                tvTripsPicture.setBackgroundColor(getActivity().getResources().getColor(R.color.white));
+                tvTripsPicture.setTextColor(getActivity().getResources().getColor(R.color.black));
+                rvNews.setVisibility(View.VISIBLE);
+                rvTripPhoto.setVisibility(View.GONE);
+            }
+        });
+
+        tvTripsPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvTripsPicture.setBackgroundColor(getActivity().getResources().getColor(R.color.appTheme2));
+                tvTripsPicture.setTextColor(getActivity().getResources().getColor(R.color.white));
+                tvPersonalPictures.setBackgroundColor(getActivity().getResources().getColor(R.color.white));
+                tvPersonalPictures.setTextColor(getActivity().getResources().getColor(R.color.black));
+                rvNews.setVisibility(View.GONE);
+                rvTripPhoto.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void fetchUserPosts() {
-        if(AppHelper.currentProfileInstance != null && AppHelper.currentProfileInstance.getUserId() != null) {
+        if (AppHelper.currentProfileInstance != null && AppHelper.currentProfileInstance.getUserId() != null) {
             FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
             rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("NewsFeed").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
@@ -211,9 +232,25 @@ public class ProfileFragment extends Fragment {
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                         if (documentSnapshots != null) {
                             documentSnapshots.size();
-                            PortfolioAdapter newsListingAdapter = new PortfolioAdapter(getContext(), documentSnapshots);
+                            PersonalPicturesUploads newsListingAdapter = new PersonalPicturesUploads(getContext(), documentSnapshots);
                             rvNews.setAdapter(newsListingAdapter);
                             rvNews.setLayoutManager(new GridLayoutManager(getContext(), 3));
+                        }
+                    }
+                }
+            });
+
+            rootRef.collection("Trips").document(AppHelper.currentProfileInstance.getUserId()).collection("UserTrips").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isComplete()) {
+                        List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                        if (documentSnapshots != null) {
+                            PortfolioAdapter adapter = new PortfolioAdapter(getContext(), documentSnapshots);
+                            rvTripPhoto.setAdapter(adapter);
+                            rvTripPhoto.setLayoutManager(new GridLayoutManager(getContext(), 3));
+//                            documentSnapshots.size();
+//
                         }
                     }
                 }

@@ -72,6 +72,7 @@ public class AppHelper {
     public static String currentChatThreadId;
     public static String inProgressTripId;
     public static PlacesModel editDestModel;
+    public static List<DocumentSnapshot> newsListCurrent;
     private static AppHelper instance = null;
     public static Context context;
     public static TripEntity tripEntityList = new TripEntity();
@@ -221,12 +222,12 @@ public class AppHelper {
         return formatter.format(calendar.getTime());
     }
 
-    public static String getUserIntrests() {
+    public static String getUserIntrests(JSONArray intrests) {
         String interest = "";
-        if(AppHelper.interestUser != null && !AppHelper.interestUser.toString().matches("")){
-            for(int i=0; i<AppHelper.interestUser.length();i++){
+        if(intrests != null && !intrests.toString().matches("")){
+            for(int i=0; i<intrests.length();i++){
                 try {
-                    JSONObject jsonObject = AppHelper.interestUser.getJSONObject(i);
+                    JSONObject jsonObject = intrests.getJSONObject(i);
                     if(interest.matches(""))
                         interest = jsonObject.getString("interestName");
                     else

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="150dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_trip"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_rowWeight="1"
+        android:layout_columnWeight="1"
+        android:backgroundTint="@color/white"
+        android:layout_margin="5dp"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/tv_reports">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:layout_gravity="center"
+        android:id="@+id/trip_title"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:fontFamily="@font/the_girl_next_door"
+        android:text="Album of trip to mushkpuri"/>
+    <TextView
+        android:id="@+id/iv_portf_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="10+"
+        android:fontFamily="@font/the_girl_next_door"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:textSize="60sp"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:fontFamily="@font/the_girl_next_door"
+        android:text="Photos"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</LinearLayout>

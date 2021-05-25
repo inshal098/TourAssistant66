@@ -3,7 +3,7 @@ package com.tourassistant.coderoids.models;
 import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.GeoPoint;
 
-public class NewsFeed {
+public class NewsFeedModel {
     private String title;
     private String userName;
     private String dateInMillis;

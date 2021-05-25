@@ -126,10 +126,8 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
         if(AppHelper.tripEntityList.getFirebaseUserId().matches(AppHelper.currentProfileInstance.getUserId())) {
             editorLogin.putString("isTripInProgress","1").apply();
             foreCastTrip.setVisibility(View.VISIBLE);
-            hazardFabBut.setVisibility(View.GONE);
         } else {
             foreCastTrip.setVisibility(View.GONE);
-            hazardFabBut.setVisibility(View.VISIBLE);
         }
         // Getting reference to SupportMapFragment of the activity_main
         SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);

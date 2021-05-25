@@ -4,12 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatSpinner;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -29,9 +27,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
@@ -42,10 +37,8 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.firebase.firestore.Blob;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -53,7 +46,7 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
-import com.tourassistant.coderoids.models.NewsFeed;
+import com.tourassistant.coderoids.models.NewsFeedModel;
 import com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner;
 
 import java.io.ByteArrayOutputStream;
@@ -149,22 +142,22 @@ public class ReportHazard extends AppCompatActivity {
             if (!nameUser.matches("") && !nameUser.isEmpty() && !etDesctiptionS.isEmpty() && !etTripTitleS.isEmpty() && !materialDesignSpinner.getText().toString().isEmpty()
                     && !tvGeoPoint.getText().toString().isEmpty() && profileImageBlob != null) {
                 FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-                NewsFeed newsFeed = new NewsFeed();
-                newsFeed.setTitle(etTripTitleS);
-                newsFeed.setUserName(nameUser);
-                newsFeed.setDescription(etDesctiptionS);
-                newsFeed.setHazardType(materialDesignSpinner.getText().toString());
-                newsFeed.setNewsThumbNail(profileImageBlob);
-                newsFeed.setGeoPoint(point);
-                newsFeed.setDateInMillis(System.currentTimeMillis() + "");
-                newsFeed.setUploadedById(AppHelper.currentProfileInstance.getUserId());
+                NewsFeedModel newsFeedModel = new NewsFeedModel();
+                newsFeedModel.setTitle(etTripTitleS);
+                newsFeedModel.setUserName(nameUser);
+                newsFeedModel.setDescription(etDesctiptionS);
+                newsFeedModel.setHazardType(materialDesignSpinner.getText().toString());
+                newsFeedModel.setNewsThumbNail(profileImageBlob);
+                newsFeedModel.setGeoPoint(point);
+                newsFeedModel.setDateInMillis(System.currentTimeMillis() + "");
+                newsFeedModel.setUploadedById(AppHelper.currentProfileInstance.getUserId());
                 if (AppHelper.tripEntityList != null && AppHelper.tripEntityList.getFirebaseId() != null) {
-                    newsFeed.setTripId(AppHelper.tripEntityList.getFirebaseId());
-                    rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("NewsFeed").document().set(newsFeed);
+                    newsFeedModel.setTripId(AppHelper.tripEntityList.getFirebaseId());
+                    rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("NewsFeed").document().set(newsFeedModel);
                 } else
-                    newsFeed.setTripId("");
+                    newsFeedModel.setTripId("");
 
-                rootRef.collection("NewsFeed").document().set(newsFeed).addOnCompleteListener(new OnCompleteListener<Void>() {
+                rootRef.collection("NewsFeed").document().set(newsFeedModel).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isComplete()) {
@@ -175,7 +168,7 @@ public class ReportHazard extends AppCompatActivity {
                     }
                 });
 
-                rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("NewsFeed").document().set(newsFeed).addOnCompleteListener(new OnCompleteListener<Void>() {
+                rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("NewsFeed").document().set(newsFeedModel).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
 
@@ -373,7 +366,9 @@ public class ReportHazard extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+        int orientation =1;
+        if(ei != null)
+            orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
                 ExifInterface.ORIENTATION_UNDEFINED);
 
         Bitmap rotatedBitmap = null;

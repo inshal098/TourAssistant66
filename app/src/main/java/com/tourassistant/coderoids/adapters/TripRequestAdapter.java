@@ -41,7 +41,7 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
         this.tripRequest = tripRequest;
 
     }
-
+//
     @NonNull
     @Override
     public TripRequestAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int position) {
@@ -57,7 +57,6 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
             Profile currentProfile = null;
             if(tripRequest != null) {
                currentProfile = fetchProfile(tripRequest.getJSONObject(position).getString("userId"));
-                viewHolder.mtUserName.setText(currentProfile.getDisplayName());
                 JSONObject jsonObject = tripRequest.getJSONObject(position);
                 if (jsonObject.has("status") && jsonObject.getString("status").matches("1")) {
                     viewHolder.btnFollow.setText("Added");
@@ -78,10 +77,13 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
                 if (tripRequest == null && currentProfile == null){
                     currentProfile = tripRequesArray.get(position);
                 }
-                byte[] bytes = currentProfile.getProfileImage().toBytes();
-                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                viewHolder.userImage.setImageBitmap(bmp);
+                if(currentProfile.getProfileImage() != null) {
+                    byte[] bytes = currentProfile.getProfileImage().toBytes();
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    viewHolder.userImage.setImageBitmap(bmp);
+                }
             }
+            viewHolder.mtUserName.setText(currentProfile.getDisplayName());
             int finalPosition = position;
             viewHolder.btnFollow.setOnClickListener(new View.OnClickListener() {
                 @Override

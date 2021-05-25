@@ -59,8 +59,8 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class HomeFragment extends Fragment implements RequestCompletionListener , onClickListner {
-    TextView tvTripCount ,tvFiltered,tvAll ,prefs, tvNotice;
+public class HomeFragment extends Fragment implements RequestCompletionListener, onClickListner {
+    TextView tvTripCount, tvFiltered, tvAll, prefs, tvNotice;
     public static HomeFragment instance;
     RecyclerView rvPublicTrips;
     LinearLayoutManager llm;
@@ -72,7 +72,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
     private boolean destinationState[] = new boolean[0];
     RequestCompletionListener requestCompletionListener;
     onClickListner onClickListner;
-    RecyclerView  savedDestinations;
+    RecyclerView savedDestinations;
     LinearLayoutManager savedDestinationLLM;
 
     @Override
@@ -86,7 +86,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view =  inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
         initializeView(view);
         return view;
     }
@@ -107,7 +107,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
 
         savedDestinationLLM = new LinearLayoutManager(getActivity());
         savedDestinationLLM.setOrientation(LinearLayoutManager.HORIZONTAL);
-        if(AppHelper.currentProfileInstance == null){
+        if (AppHelper.currentProfileInstance == null) {
             tvNotice.setText("Please Complete Your Profile,To Get Started");
             addIntrest.setVisibility(View.GONE);
         }
@@ -128,7 +128,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
         tvFiltered.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(state != 0){
+                if (state != 0) {
                     state = 0;
                     populateTrips();
                 }
@@ -138,7 +138,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
         tvAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(state == 0){
+                if (state == 0) {
                     state = 1;
                     populateTrips();
                 }
@@ -168,7 +168,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
                 showAlertDialog();
             }
         });
-        prefs.setText(AppHelper.getUserIntrests());
+        prefs.setText(AppHelper.getUserIntrests(AppHelper.interestUser));
 
         fetchDestinations();
     }
@@ -183,11 +183,40 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
                     ArrayList<PlacesModel> fetchedPlaces = new ArrayList<>();
                     for (int i = 0; i < placesNew.size(); i++) {
                         DocumentSnapshot documentSnapshot = placesNew.get(i);
-                        fetchedPlaces.add(documentSnapshot.toObject(PlacesModel.class));
+                        PlacesModel placesModel = documentSnapshot.toObject(PlacesModel.class);
+                        String tripTags = placesModel.getTripTags();
+                        if (AppHelper.currentProfileInstance.getInterests() != null
+                                && !AppHelper.currentProfileInstance.getInterests().matches("")
+                        && tripTags != null && !tripTags.matches("")) {
+                            JSONArray tripInterestTag = null;
+                            try {
+                                JSONArray usersInterest = new JSONArray(AppHelper.currentProfileInstance.getInterests());
+                                tripInterestTag = new JSONArray(tripTags);
+                                if (tripInterestTag.length() > 0) {
+                                    for (int k = 0; k < tripInterestTag.length(); k++) {
+                                        boolean isMatched = false;
+                                        JSONObject tripJob = tripInterestTag.getJSONObject(k);
+                                        for (int j = 0; j < usersInterest.length(); j++) {
+                                            JSONObject userInterest = usersInterest.getJSONObject(j);
+                                            if (userInterest.getString("interestId").matches(tripJob.getString("interestId"))) {
+                                                fetchedPlaces.add(placesModel);
+                                                isMatched = true;
+                                                break;
+                                            }
+                                        }
+                                        if (isMatched)
+                                            break;
+                                    }
+                                }
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                     if (fetchedPlaces.size() > 0) {
                         destinationState = new boolean[fetchedPlaces.size()];
-                        DestinationsAdapter destinatonAdapter = new DestinationsAdapter(getActivity(), fetchedPlaces, destinationState,"H");
+                        DestinationsAdapter destinatonAdapter = new DestinationsAdapter(getActivity(), fetchedPlaces, destinationState, "H");
                         savedDestinations.setAdapter(destinatonAdapter);
                         savedDestinations.setLayoutManager(savedDestinationLLM);
                     }
@@ -198,6 +227,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
         });
 
     }
+
     private void uncheckAll() {
         for (int i = 0; i < rowState.length; i++) {
             rowState[i] = false;
@@ -207,30 +237,30 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
     public void getAllTrips() {
         try {
             populateTrips();
-        } catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
     private void populateTrips() {
         List<DocumentSnapshot> array = new ArrayList<>();
-        if(state ==0){
+        if (state == 0) {
             array = AppHelper.filteredTrips;
-            tvFiltered.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.cell_filled));
+            tvFiltered.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.cell_filled));
             tvFiltered.setTextColor(ContextCompat.getColor(getContext(), R.color.white));
 
-            tvAll.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.cell));
+            tvAll.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.cell));
             tvAll.setTextColor(ContextCompat.getColor(getContext(), R.color.black));
         } else {
             array = AppHelper.allTrips;
-            tvAll.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.cell_filled));
+            tvAll.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.cell_filled));
             tvAll.setTextColor(ContextCompat.getColor(getContext(), R.color.white));
 
-            tvFiltered.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.cell));
+            tvFiltered.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.cell));
             tvFiltered.setTextColor(ContextCompat.getColor(getContext(), R.color.black));
         }
-        if(array != null && array.size()>0) {
-            PublicTripsAdapter publicTripsAdapter = new PublicTripsAdapter(getActivity(), array ,onClickListner);
+        if (array != null && array.size() > 0) {
+            PublicTripsAdapter publicTripsAdapter = new PublicTripsAdapter(getActivity(), array, onClickListner);
             rvPublicTrips.setAdapter(publicTripsAdapter);
             rvPublicTrips.setLayoutManager(llm);
         }
@@ -272,7 +302,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
             getUpdatedRowState();
         }
 
-        InterestSelectionAdapter interestsAdapterSelection = new InterestSelectionAdapter(getActivity(), interests, rowState ,interestCount);
+        InterestSelectionAdapter interestsAdapterSelection = new InterestSelectionAdapter(getActivity(), interests, rowState, interestCount);
         interstsGrid.setAdapter(interestsAdapterSelection);
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -285,7 +315,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
                     FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
                     FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                     DocumentReference uidRef = rootRef.collection("Users").document(firebaseUser.getUid());
-                    uidRef.update("interests",intrestArray+"");
+                    uidRef.update("interests", intrestArray + "");
                     alertDialog.dismiss();
                     getAllTrips();
                     manageUserPreferences();
@@ -298,14 +328,14 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
         alertDialog.show();
     }
 
-    private void manageUserPreferences(){
+    private void manageUserPreferences() {
         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
         rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 try {
                     AppHelper.currentProfileInstance = documentSnapshot.toObject(Profile.class);
-                    if(AppHelper.currentProfileInstance != null)
+                    if (AppHelper.currentProfileInstance != null)
                         AppHelper.currentProfileInstance.setUserId(documentSnapshot.getId());
                     if (AppHelper.currentProfileInstance.getInterests() != null && !AppHelper.currentProfileInstance.getInterests().matches(""))
                         AppHelper.interestUser = new JSONArray(AppHelper.currentProfileInstance.getInterests());
@@ -327,7 +357,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
     }
 
     @Override
-    public void onClick(int pos,final DocumentSnapshot currentSnap) {
+    public void onClick(int pos, final DocumentSnapshot currentSnap) {
         ProgressDialog progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("Sending Request To Admin Now, Please Wait...");
         progressDialog.setIndeterminate(true);
@@ -343,13 +373,13 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
             JSONArray tripRequestsArr = new JSONArray();
             JSONArray tripRequestsArrToUpdate = new JSONArray();
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("userId",userId);
-            if(joinTripRequests ==  null || joinTripRequests ==  "null" || joinTripRequests.matches("")|| joinTripRequests.matches("null")){
+            jsonObject.put("userId", userId);
+            if (joinTripRequests == null || joinTripRequests == "null" || joinTripRequests.matches("") || joinTripRequests.matches("null")) {
                 tripRequestsArr.put(jsonObject);
             } else {
                 tripRequestsArr = new JSONArray(joinTripRequests);
                 tripRequestsArrToUpdate = new JSONArray(joinTripRequests);
-                if(tripRequestsArr.length()>0) {
+                if (tripRequestsArr.length() > 0) {
                     for (int i = 0; i < tripRequestsArr.length(); i++) {
                         JSONObject jsonObject1 = tripRequestsArr.getJSONObject(i);
                         if (!jsonObject1.getString("userId").matches(jsonObject.getString("userId"))) {
@@ -360,7 +390,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
                     tripRequestsArr.put(jsonObject);
                 }
             }
-            if(tripRequestsArrToUpdate.length() < tripRequestsArr.length()) {
+            if (tripRequestsArrToUpdate.length() < tripRequestsArr.length()) {
                 uidRef.update("joinTripRequests", tripRequestsArr + "");
                 uidRefPublic.update("joinTripRequests", tripRequestsArr + "");
                 rootRef.collection("PublicTrips").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -386,7 +416,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener 
             } else {
                 progressDialog.dismiss();
             }
-        } catch (JSONException ex){
+        } catch (JSONException ex) {
             ex.printStackTrace();
         }
 

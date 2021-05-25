@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -42,15 +43,20 @@ import com.tourassistant.coderoids.helpers.LocationHelper;
 import com.tourassistant.coderoids.models.Profile;
 import com.tourassistant.coderoids.models.TripCurrentLocation;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class FriendsProfileActivity extends AppCompatActivity {
-    ShapeableImageView sivProfileImage;
-    TextView tvName,tvLocationStatus;
+    CircleImageView sivProfileImage;
+    TextView tvName,tvLocationStatus ,tvFollowersCount ,tvFollowingCount,tvPostCount,tvIntrest ,tvDescription ,website ,tvPersonalPictures ,tvTripsPicture;
     RadioGroup rgContentGroup;
     RadioButton rbtnLocation , rbtnPosts;
-    RecyclerView rvNews;
+    RecyclerView rvNews ,rvTripPhoto;
     LinearLayoutManager llmNews;
     GoogleMap map;
     LinearLayout mapLayout;
@@ -60,60 +66,100 @@ public class FriendsProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends_profile);
-        sivProfileImage = findViewById(R.id.profile_image);
+        sivProfileImage = findViewById(R.id.profile_photo);
         rvNews = findViewById(R.id.rv_news_feed);
+        tvFollowersCount = findViewById(R.id.tv_followers_count);
+        tvFollowingCount = findViewById(R.id.tv_following_count);
+        tvPostCount = findViewById(R.id.tv_post_count);
+        tvIntrest = findViewById(R.id.prefs);
+        tvDescription = findViewById(R.id.description);
+        website = findViewById(R.id.website);
+
         llmNews = new LinearLayoutManager(this);
         llmNews.setOrientation(LinearLayoutManager.VERTICAL);
-        tvName = findViewById(R.id.tv_name);
-        tvLocationStatus = findViewById(R.id.location_status);
-        rgContentGroup = findViewById(R.id.radio_content);
-        rbtnLocation = findViewById(R.id.radio_location);
-        mapLayout = findViewById(R.id.map_layout);
-        rbtnPosts = findViewById(R.id.radio_posts);
+        tvName = findViewById(R.id.user_name);
+        tvPersonalPictures = findViewById(R.id.pt_);
+        tvTripsPicture = findViewById(R.id.pt_trip);
+        rvTripPhoto = findViewById(R.id.rv_trip_photos);
+
+        //tvLocationStatus = findViewById(R.id.location_status);
+        //rgContentGroup = findViewById(R.id.radio_content);
+        //rbtnLocation = findViewById(R.id.radio_location);
+        //mapLayout = findViewById(R.id.map_layout);
+       // rbtnPosts = findViewById(R.id.radio_posts);
         String userId = getIntent().getStringExtra("userId");
         fetchUserInformation(userId);
-        int checkedId = rgContentGroup.getCheckedRadioButtonId();
-        tvLocationStatus.setVisibility(View.GONE);
-        manageState(checkedId);
-        rgContentGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        //int checkedId = rgContentGroup.getCheckedRadioButtonId();
+        //tvLocationStatus.setVisibility(View.GONE);
+        //manageState(checkedId);
+        //rgContentGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        //    @Override
+        //    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        //        manageState(checkedId);
+        //    }
+        //});
+
+        tvPersonalPictures.setBackgroundColor(getResources().getColor(R.color.appTheme2));
+        tvPersonalPictures.setTextColor(getResources().getColor(R.color.white));
+        rvNews.setVisibility(View.VISIBLE);
+        rvTripPhoto.setVisibility(View.GONE);
+        tvPersonalPictures.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                manageState(checkedId);
+            public void onClick(View v) {
+                tvPersonalPictures.setBackgroundColor(getResources().getColor(R.color.appTheme2));
+                tvPersonalPictures.setTextColor(getResources().getColor(R.color.white));
+
+                tvTripsPicture.setBackgroundColor(getResources().getColor(R.color.white));
+                tvTripsPicture.setTextColor(getResources().getColor(R.color.black));
+                rvNews.setVisibility(View.VISIBLE);
+                rvTripPhoto.setVisibility(View.GONE);
+            }
+        });
+
+        tvTripsPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tvTripsPicture.setBackgroundColor(getResources().getColor(R.color.appTheme2));
+                tvTripsPicture.setTextColor(getResources().getColor(R.color.white));
+                tvPersonalPictures.setBackgroundColor(getResources().getColor(R.color.white));
+                tvPersonalPictures.setTextColor(getResources().getColor(R.color.black));
+                rvNews.setVisibility(View.GONE);
+                rvTripPhoto.setVisibility(View.VISIBLE);
             }
         });
     }
 
-    private void manageState(int checkedId) {
-        switch (checkedId){
-            case R.id.radio_posts:
-                mapLayout.setVisibility(View.GONE);
-                rvNews.setVisibility(View.VISIBLE);
-                break;
-            case R.id.radio_location:
-                if(tripCurrentLocations != null && tripCurrentLocations.size()>0) {
-                    rvNews.setVisibility(View.GONE);
-                    mapLayout.setVisibility(View.VISIBLE);
-                } else{
-                    mapLayout.setVisibility(View.GONE);
-                    tvLocationStatus.setVisibility(View.VISIBLE);
-                }
-                break;
-        }
-    }
+//    private void manageState(int checkedId) {
+//        switch (checkedId){
+//            case R.id.radio_posts:
+//                mapLayout.setVisibility(View.GONE);
+//                rvNews.setVisibility(View.VISIBLE);
+//                break;
+//            case R.id.radio_location:
+//                if(tripCurrentLocations != null && tripCurrentLocations.size()>0) {
+//                    rvNews.setVisibility(View.GONE);
+//                    mapLayout.setVisibility(View.VISIBLE);
+//                } else{
+//                    mapLayout.setVisibility(View.GONE);
+//                    tvLocationStatus.setVisibility(View.VISIBLE);
+//                }
+//                break;
+//        }
+//    }
 
-    private void manageMap() {
-        SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.friends_map);
-        if (map == null) {
-            // Getting Map for the SupportMapFragment
-            fm.getMapAsync(new OnMapReadyCallback() {
-                @Override
-                public void onMapReady(GoogleMap mGoogleMap) {
-                    map = mGoogleMap;
-                    populateMap();
-                }
-            });
-        }
-    }
+//    private void manageMap() {
+//        SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.friends_map);
+//        if (map == null) {
+//            // Getting Map for the SupportMapFragment
+//            fm.getMapAsync(new OnMapReadyCallback() {
+//                @Override
+//                public void onMapReady(GoogleMap mGoogleMap) {
+//                    map = mGoogleMap;
+//                     populateMap();
+//                }
+//            });
+//        }
+//    }
 
     private void populateMap() {
         if(tripCurrentLocations != null && tripCurrentLocations.size()>0) {
@@ -172,12 +218,23 @@ public class FriendsProfileActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if(task.isComplete()){
-                    Profile profile = task.getResult().toObject(Profile.class);
-                    if(profile.getProfileImage() != null){
-                        byte [] bytes=   profile.getProfileImage().toBytes();
-                        Bitmap bmp = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-                        sivProfileImage.setImageBitmap(bmp);
-                        tvName.setText(profile.getDisplayName());
+                    try {
+                        Profile profile = task.getResult().toObject(Profile.class);
+                        if(profile.getProfileImage() != null){
+                            byte [] bytes=   profile.getProfileImage().toBytes();
+                            Bitmap bmp = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+                            sivProfileImage.setImageBitmap(bmp);
+                            tvName.setText(profile.getDisplayName());
+                            tvPostCount.setText(profile.getTotalPosts());
+                            tvFollowersCount.setText(profile.getFollowers());
+                            tvFollowingCount.setText(profile.getFollowing());
+                            tvDescription.setText(profile.getAboutDescription());
+                            website.setText(profile.getWebsite());
+                            if(profile.getInterests() != null && !profile.getInterests().toString().matches(""))
+                                tvIntrest.setText(AppHelper.getUserIntrests(new JSONArray(profile.getInterests())));
+                        }
+                    } catch (JSONException ex){
+                        ex.printStackTrace();
                     }
                 }
             }
@@ -204,15 +261,15 @@ public class FriendsProfileActivity extends AppCompatActivity {
                 if(task.isComplete()) {
                     List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                     if (documentSnapshots != null) {
-                        tripCurrentLocations = new ArrayList<>();
-                        for (int i = 0; i < documentSnapshots.size(); i++) {
-                            TripCurrentLocation tripCurrentLocation = documentSnapshots.get(i).toObject(TripCurrentLocation.class);
-                            tripCurrentLocations.add(tripCurrentLocation);
-                        }
-                        manageMap();
+                        //tripCurrentLocations = new ArrayList<>();
+                        //for (int i = 0; i < documentSnapshots.size(); i++) {
+                        //    TripCurrentLocation tripCurrentLocation = documentSnapshots.get(i).toObject(TripCurrentLocation.class);
+                        //    tripCurrentLocations.add(tripCurrentLocation);
+                        //}
+                        //manageMap();
                     } else {
-                        tvLocationStatus.setVisibility(View.VISIBLE);
-                        mapLayout.setVisibility(View.GONE);
+                       // tvLocationStatus.setVisibility(View.VISIBLE);
+                       // mapLayout.setVisibility(View.GONE);
                     }
                 }
             }

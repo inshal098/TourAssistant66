@@ -293,7 +293,6 @@ public class EditProfileFragment extends Fragment {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
         }
     }
@@ -307,8 +306,10 @@ public class EditProfileFragment extends Fragment {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED);
+        int orientation =1;
+        if(ei != null)
+            orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
 
         Bitmap rotatedBitmap = null;
         switch (orientation) {
@@ -416,3 +417,5 @@ public class EditProfileFragment extends Fragment {
         }
     }
 }
+
+//

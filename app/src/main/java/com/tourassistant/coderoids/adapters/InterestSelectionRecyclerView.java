@@ -63,24 +63,20 @@ public class InterestSelectionRecyclerView extends RecyclerView.Adapter<Interest
                     @Override
                     public void onClick(View v) {
                         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
-                        rootRef.collection("Interests").document(documentSnapshot.getId()).collection(documentSnapshot.getId().toLowerCase()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                if (task.isComplete()) {
-                                    List<DocumentSnapshot> interest = task.getResult().getDocuments();
-                                    showAlertDialog((Activity) context, interest, documentSnapshot.getId());
-                                }
-                            }
-                        });
+                        rootRef.collection("Interests").document(documentSnapshot.getId()).collection(documentSnapshot.getId()
+                                .toLowerCase())
+                                .get()
+                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        if (task.isComplete()) {
+                                            List<DocumentSnapshot> interest = task.getResult().getDocuments();
+                                            showAlertDialog((Activity) context, interest, documentSnapshot.getId());
+                                        }
+                                    }
+                                });
                     }
                 });
-//                if(rowState[finalPosition]){
-//                    viewHolder.materialTextView.setBackground(context.getResources().getDrawable(R.drawable.cell_filled));
-//                    viewHolder.materialTextView.setTextColor(context.getResources().getColor(R.color.white));
-//                } else {
-//                    viewHolder.materialTextView.setBackground(context.getResources().getDrawable(R.drawable.cell));
-//                    viewHolder.materialTextView.setTextColor(context.getResources().getColor(R.color.black));
-//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
