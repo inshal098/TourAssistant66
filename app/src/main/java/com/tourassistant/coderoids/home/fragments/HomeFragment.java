@@ -357,7 +357,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener,
     }
 
     @Override
-    public void onClick(int pos, final DocumentSnapshot currentSnap) {
+    public void onClick(int pos, final DocumentSnapshot currentSnap, String tag) {
         ProgressDialog progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("Sending Request To Admin Now, Please Wait...");
         progressDialog.setIndeterminate(true);

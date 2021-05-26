@@ -89,7 +89,7 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
                 @Override
                 public void onClick(View v) {
                     if(viewHolder.btnFollow.getText().toString().matches("Accept Request") && onClickListner != null){
-                        onClickListner.onClick(finalPosition,null);
+                        onClickListner.onClick(finalPosition,null,"");
                     }
                 }
             });

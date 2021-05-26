@@ -109,7 +109,7 @@ public class JoinTripRequestFragment extends Fragment implements onClickListner 
     }
 
     @Override
-    public void onClick(int pos, DocumentSnapshot documentSnapshot) {
+    public void onClick(int pos, DocumentSnapshot documentSnapshot , String tag) {
         try {
             FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
             String tripId = AppHelper.tripEntityList.getFirebaseId();

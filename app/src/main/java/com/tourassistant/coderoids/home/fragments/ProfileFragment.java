@@ -240,7 +240,8 @@ public class ProfileFragment extends Fragment {
                 }
             });
 
-            rootRef.collection("Trips").document(AppHelper.currentProfileInstance.getUserId()).collection("UserTrips").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            rootRef.collection("Trips").document(AppHelper.currentProfileInstance.getUserId())
+                    .collection("UserTrips").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isComplete()) {

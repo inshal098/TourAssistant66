@@ -106,7 +106,7 @@ public class FollowRequestAdapter extends RecyclerView.Adapter<FollowRequestAdap
                     jsonArray.put(notiObjNew);
                     NotificationPublisher notificationPublisher = new NotificationPublisher(context, "FollowRequestAccept", jsonArray + "", friendRequestSenderId);
                     notificationPublisher.publishNotification();
-                    onClickListner.onClick(finalPosition,null);
+                    onClickListner.onClick(finalPosition,null ,"");
                 }
             });
         } catch (Exception e) {

@@ -192,7 +192,7 @@ public class ChatParentActivity extends AppCompatActivity implements onClickList
     }
 
     @Override
-    public void onClick(int pos, DocumentSnapshot documentSnapshot) {
+    public void onClick(int pos, DocumentSnapshot documentSnapshot , String tag) {
         AppHelper.currentChatRecieverInstance = documentSnapshot;
         if(alertDialog != null && alertDialog.isShowing()){
             alertDialog.dismiss();

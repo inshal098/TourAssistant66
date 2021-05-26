@@ -91,7 +91,7 @@ public class PublicTripsAdapter extends RecyclerView.Adapter<PublicTripsAdapter.
                         viewHolder.trips.setText("Request Sent");
                         viewHolder.trips.setBackgroundColor(context.getColor(R.color.green));
                         DocumentSnapshot documentSnapshot1 = documentSnapshot;
-                        onClickListner.onClick(finalPosition, documentSnapshot1);
+                        onClickListner.onClick(finalPosition, documentSnapshot1,"");
                         try {
                             JSONArray jsonArray = new JSONArray();
                             JSONObject jsonObject = new JSONObject();

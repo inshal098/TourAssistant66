@@ -19,6 +19,9 @@ import com.tourassistant.coderoids.adapters.SuggestedFriendsAdapter;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.interfaces.onClickListner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class InviteFragment extends Fragment  implements onClickListner {
     RecyclerView rvInvite ,rvFriends;
     MaterialTextView friendRequestTag ,invitationTag ,friendsTag;
@@ -28,6 +31,8 @@ public class InviteFragment extends Fragment  implements onClickListner {
     SuggestedFriendsAdapter suggestedFriendsAdapter;
     FriendsAdapter friendsAdapter;
     boolean rowSate[];
+    public static List<DocumentSnapshot> usersObj = new ArrayList<>();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,17 +60,20 @@ public class InviteFragment extends Fragment  implements onClickListner {
 
         rvMang2 = new LinearLayoutManager(getActivity());
         rvMang2.setOrientation(LinearLayoutManager.HORIZONTAL);
+        if(AppHelper.allFriends != null && AppHelper.allFriends.size() > 0) {
+            usersObj = AppHelper.allUsers;
+        }
         populateFriendsSuggestionList();
         populateFriendsList();
     }
 
 
     private void populateFriendsList() {
-        if(AppHelper.allFriends != null && AppHelper.allFriends.size() > 0){
+        if(usersObj != null && usersObj.size() > 0){
             rowSate = new boolean[AppHelper.allFriends.size()];
             manageTripState();
             friendsTag.setVisibility(View.VISIBLE);
-            friendsAdapter = new FriendsAdapter(getContext(),AppHelper.allFriends,onClickListner,rowSate);
+            friendsAdapter = new FriendsAdapter(getContext(),usersObj,onClickListner,rowSate);
             rvFriends.setAdapter(friendsAdapter);
             rvFriends.setLayoutManager(rvMang2);
         } else {
@@ -86,9 +94,9 @@ public class InviteFragment extends Fragment  implements onClickListner {
     }
 
     private void populateFriendsSuggestionList() {
-        if(AppHelper.allUsers != null && AppHelper.allUsers.size()>0){
+        if(usersObj != null && usersObj.size()>0){
             invitationTag.setVisibility(View.VISIBLE);
-            suggestedFriendsAdapter = new SuggestedFriendsAdapter(getContext(),AppHelper.allUsers,onClickListner,progressDialog);
+            suggestedFriendsAdapter = new SuggestedFriendsAdapter(getContext(),usersObj,onClickListner,progressDialog);
             rvInvite.setAdapter(suggestedFriendsAdapter);
             rvInvite.setLayoutManager(rvMang);
         } else {
@@ -100,13 +108,11 @@ public class InviteFragment extends Fragment  implements onClickListner {
 
         if(progressDialog != null && progressDialog.isShowing())
             progressDialog.dismiss();
-
-
     }
 
     @Override
-    public void onClick(int pos, DocumentSnapshot documentSnapshot) {
-        AppHelper.allUsers.remove(pos);
+    public void onClick(int pos, DocumentSnapshot documentSnapshot , String tag) {
+        usersObj.remove(pos);
         populateFriendsSuggestionList();
     }
 }

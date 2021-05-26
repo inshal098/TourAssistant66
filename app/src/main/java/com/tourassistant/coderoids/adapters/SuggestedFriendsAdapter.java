@@ -88,7 +88,7 @@ public class SuggestedFriendsAdapter extends RecyclerView.Adapter<SuggestedFrien
                         jsonArray.put(notiObjNew);
                         NotificationPublisher notificationPublisher = new NotificationPublisher(context, "FollowRequest", jsonArray + "", uid);
                         notificationPublisher.publishNotification();
-                        onClickListner.onClick(finalPosition,null);
+                        onClickListner.onClick(finalPosition,null ,"SF");
 
                     }
                 });

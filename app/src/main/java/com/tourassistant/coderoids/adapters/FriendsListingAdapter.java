@@ -80,8 +80,8 @@ public class FriendsListingAdapter extends RecyclerView.Adapter<FriendsListingAd
                             byte [] bytes=   profile.getProfileImage().toBytes();
                             Bitmap bmp = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
                             viewHolder.sIVImage.setImageBitmap(bmp);
-                            viewHolder.tvName.setText(profile.getDisplayName());
                         }
+                        viewHolder.tvName.setText(profile.getDisplayName());
                     }
                 }
             });

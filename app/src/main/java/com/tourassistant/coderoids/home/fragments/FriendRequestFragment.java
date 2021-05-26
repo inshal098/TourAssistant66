@@ -24,6 +24,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.FollowRequestAdapter;
 import com.tourassistant.coderoids.adapters.FriendsListingAdapter;
+import com.tourassistant.coderoids.adapters.SuggestedFriendsAdapter;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.home.DashboardActivity;
 import com.tourassistant.coderoids.interfaces.onClickListner;
@@ -33,14 +34,17 @@ import java.util.List;
 
 
 public class FriendRequestFragment extends Fragment implements onClickListner {
-    RecyclerView rvFollowRequest , rvFriendsList;
+    RecyclerView rvFollowRequest, rvFriendsList, rvUsers;
     MaterialTextView friendRequestTag;
     FollowRequestAdapter followRequestAdapter;
-    LinearLayoutManager llm , friendsLayout;
+    LinearLayoutManager llm, friendsLayout, rvManag;
     boolean rowState[];
     onClickListner onClickListner;
     ProgressDialog progressDialog;
     ArrayList<DocumentSnapshot> friendsList = new ArrayList<>();
+    List<DocumentSnapshot> usersObj;
+    SuggestedFriendsAdapter suggestedFriendsAdapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,21 +62,73 @@ public class FriendRequestFragment extends Fragment implements onClickListner {
 
     private void initializeView(View view) {
         rvFollowRequest = view.findViewById(R.id.rv_follow_request);
+        rvUsers = view.findViewById(R.id.user_listing);
         rvFriendsList = view.findViewById(R.id.friends_listing);
         friendRequestTag = view.findViewById(R.id.friend_request_tag);
         llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.HORIZONTAL);
+
+        rvManag = new LinearLayoutManager(getActivity());
+        rvManag.setOrientation(LinearLayoutManager.HORIZONTAL);
 
         friendsLayout = new LinearLayoutManager(getActivity());
         friendsLayout.setOrientation(LinearLayoutManager.HORIZONTAL);
         fetchAllUsers();
         populateFriendsList();
         populateFriends();
+        populateUsers();
     }
 
+    private void populateUsers() {
+        if (AppHelper.allUsers != null && AppHelper.allUsers.size() > 0) {
+            List<DocumentSnapshot> users = filterUsers();
+            suggestedFriendsAdapter = new SuggestedFriendsAdapter(getContext(), users, onClickListner, progressDialog);
+            rvUsers.setAdapter(suggestedFriendsAdapter);
+            rvUsers.setLayoutManager(rvManag);
+        }
+    }
+
+    private void populateFriendsSuggestionList() {
+        if(usersObj != null && usersObj.size()>0){
+            suggestedFriendsAdapter = new SuggestedFriendsAdapter(getContext(),usersObj,onClickListner,progressDialog);
+            rvUsers.setAdapter(suggestedFriendsAdapter);
+            rvUsers.setLayoutManager(rvManag);
+        } else {
+            if(suggestedFriendsAdapter != null)
+                suggestedFriendsAdapter.notifyDataSetChanged();
+        }
+
+        if(progressDialog != null && progressDialog.isShowing())
+            progressDialog.dismiss();
+    }
+
+    private List<DocumentSnapshot> filterUsers() {
+        usersObj =  AppHelper.allUsers;
+        String addedId = "";
+        if (AppHelper.allFriends != null) {
+            for (int k = 0; k < AppHelper.allFriends.size(); k++) {
+                DocumentSnapshot documentSnapshot = AppHelper.allFriends.get(k);
+                String user1 = documentSnapshot.getString("userFirestoreIdReceiver");
+                String user2 = documentSnapshot.getString("userFirestoreIdSender");
+                String reciverId = "";
+                if (AppHelper.currentProfileInstance.getUserId().matches(user1)) {
+                    reciverId = user2;
+                } else
+                    reciverId = user1;
+                for (int i = 0; i < usersObj.size(); i++) {
+                    String userId = usersObj.get(i).getId();
+                    if(userId.matches(reciverId))
+                        usersObj.remove(i);
+                }
+            }
+        }
+        return usersObj;
+    }
+
+
     private void populateFriends() {
-        if(AppHelper.allFriends != null && AppHelper.allFriends.size()>0){
-            FriendsListingAdapter friendsListingAdapter = new FriendsListingAdapter(getContext(),AppHelper.allFriends);
+        if (AppHelper.allFriends != null && AppHelper.allFriends.size() > 0) {
+            FriendsListingAdapter friendsListingAdapter = new FriendsListingAdapter(getContext(), AppHelper.allFriends);
             rvFriendsList.setAdapter(friendsListingAdapter);
             rvFriendsList.setLayoutManager(friendsLayout);
         }
@@ -112,7 +168,7 @@ public class FriendRequestFragment extends Fragment implements onClickListner {
             followRequestAdapter = new FollowRequestAdapter(getContext(), AppHelper.friendRequests, rowState, onClickListner, progressDialog);
             rvFollowRequest.setAdapter(followRequestAdapter);
             rvFollowRequest.setLayoutManager(llm);
-        } else if(followRequestAdapter != null){
+        } else if (followRequestAdapter != null) {
             followRequestAdapter.notifyDataSetChanged();
             friendRequestTag.setVisibility(View.VISIBLE);
         }
@@ -122,8 +178,13 @@ public class FriendRequestFragment extends Fragment implements onClickListner {
 
 
     @Override
-    public void onClick(int pos, DocumentSnapshot documentSnapshot) {
-        AppHelper.friendRequests.remove(pos);
-        populateFriendsList();
+    public void onClick(int pos, DocumentSnapshot documentSnapshot , String tag) {
+        if (tag.matches("SF")) {
+            usersObj.remove(pos);
+            populateFriendsSuggestionList();
+        } else {
+            AppHelper.friendRequests.remove(pos);
+            populateFriendsList();
+        }
     }
 }

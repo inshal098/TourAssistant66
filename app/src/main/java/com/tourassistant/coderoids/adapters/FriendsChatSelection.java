@@ -54,7 +54,7 @@ public class FriendsChatSelection extends RecyclerView.Adapter<FriendsChatSelect
                 viewHolder.btnFollow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onClickListner.onClick(finalPosition1,documentSnapshot);
+                        onClickListner.onClick(finalPosition1,documentSnapshot,"");
                     }
                 });
 
