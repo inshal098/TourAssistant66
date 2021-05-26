@@ -19,6 +19,7 @@
     <color name="light_grey">#DDDDDD</color>
     <color name="blue">#0066FF</color>
     <color name="appTheme">#25b7e0</color>
+    <color name="appThemeLight">#80D0E6</color>
     <color name="appTheme2">#115f75</color>
     <color name="appTheme2_shade">#296F83</color>
     <color name="appTheme_alpha">#FF25B7E0</color>

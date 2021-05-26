@@ -1,6 +1,7 @@
 package com.tourassistant.coderoids.profilefriends;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -11,16 +12,17 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -33,23 +35,22 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.imageview.ShapeableImageView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.tourassistant.coderoids.R;
-import com.tourassistant.coderoids.adapters.NewsListingAdapter;
 import com.tourassistant.coderoids.adapters.PersonalPicturesUploads;
 import com.tourassistant.coderoids.adapters.PortfolioAdapter;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.helpers.LocationHelper;
 import com.tourassistant.coderoids.models.Profile;
+import com.tourassistant.coderoids.models.ReviewModel;
 import com.tourassistant.coderoids.models.TripCurrentLocation;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +69,7 @@ public class FriendsProfileActivity extends AppCompatActivity {
     List<TripCurrentLocation> tripCurrentLocations;
     Button locationCheckMap ,reviewUser;
     ImageButton ibCross;
-
+    String profileUserId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,8 +95,8 @@ public class FriendsProfileActivity extends AppCompatActivity {
         mapLayout = findViewById(R.id.map_layout);
         ibCross = findViewById(R.id.ib_cross);
        // rbtnPosts = findViewById(R.id.radio_posts);
-        String userId = getIntent().getStringExtra("userId");
-        fetchUserInformation(userId);
+        profileUserId = getIntent().getStringExtra("userId");
+        fetchUserInformation(profileUserId);
 
         tvPersonalPictures.setBackgroundColor(getResources().getColor(R.color.appTheme2));
         tvPersonalPictures.setTextColor(getResources().getColor(R.color.white));
@@ -143,7 +144,7 @@ public class FriendsProfileActivity extends AppCompatActivity {
         reviewUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                
+                showAlertDialog();
             }
         });
     }
@@ -290,5 +291,35 @@ public class FriendsProfileActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+
+    private void showAlertDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.view_submit_review, null);
+        dialogBuilder.setView(dialogView);
+        RatingBar appCompatRatingBar = dialogView.findViewById(R.id.rating_bar);
+        TextInputEditText tvReviewText = dialogView.findViewById(R.id.review_et);
+        Button btnSubmit = dialogView.findViewById(R.id.btn_submit);
+        AlertDialog alertDialog = dialogBuilder.create();
+        appCompatRatingBar.setRating((float) 3.0);
+        btnSubmit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                float rating = appCompatRatingBar.getRating();
+                String message = tvReviewText.getText().toString();
+                ReviewModel reviewModel = new ReviewModel();
+                reviewModel.setReviewerId(AppHelper.currentProfileInstance.getUserId());
+                reviewModel.setRatingCount(rating+"");
+                reviewModel.setReviewMessage(message);
+                FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                rootRef.collection("Users").document(profileUserId)
+                        .collection("reviews").document().set(reviewModel);
+                Toast.makeText(FriendsProfileActivity.this, "Submitted", Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
+            }
+        });
+        alertDialog.show();
     }
 }

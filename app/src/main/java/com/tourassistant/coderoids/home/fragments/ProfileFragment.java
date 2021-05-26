@@ -37,6 +37,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.PersonalPicturesUploads;
 import com.tourassistant.coderoids.adapters.PortfolioAdapter;
+import com.tourassistant.coderoids.adapters.UserReviewsAdapter;
 import com.tourassistant.coderoids.chatmodule.ChatParentActivity;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.models.NewsFeedModel;
@@ -62,8 +63,8 @@ public class ProfileFragment extends Fragment {
     FloatingActionButton floatingChatIc;
     SharedPreferences.Editor editorLogin;
     SharedPreferences prefLogin;
-    RecyclerView rvNews, rvTripPhoto;
-    LinearLayoutManager llmNews, llTripPhoto;
+    RecyclerView rvNews, rvTripPhoto , rvReviews;
+    LinearLayoutManager llmNews, llTripPhoto ,llReviews;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -84,12 +85,16 @@ public class ProfileFragment extends Fragment {
         editorLogin.apply();
         tvName = v.findViewById(R.id.user_name);
         circleImageView = v.findViewById(R.id.profile_photo);
+        rvReviews = v.findViewById(R.id.user_reviews);
         tvPersonalPictures = v.findViewById(R.id.pt_);
         tvTripsPicture = v.findViewById(R.id.pt_trip);
         rvNews = v.findViewById(R.id.rv_news_feed);
         rvTripPhoto = v.findViewById(R.id.rv_trip_photos);
         llmNews = new LinearLayoutManager(getContext());
         llmNews.setOrientation(LinearLayoutManager.VERTICAL);
+
+        llReviews = new LinearLayoutManager(getContext());
+        llReviews.setOrientation(LinearLayoutManager.HORIZONTAL);
 
         llTripPhoto = new LinearLayoutManager(getContext());
         llTripPhoto.setOrientation(LinearLayoutManager.VERTICAL);
@@ -252,6 +257,21 @@ public class ProfileFragment extends Fragment {
                             rvTripPhoto.setLayoutManager(new GridLayoutManager(getContext(), 3));
 //                            documentSnapshots.size();
 //
+                        }
+                    }
+                }
+            });
+
+            rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("reviews").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isComplete()) {
+                        List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                        if (documentSnapshots != null) {
+                            documentSnapshots.size();
+                            UserReviewsAdapter newsListingAdapter = new UserReviewsAdapter(getContext(), documentSnapshots);
+                            rvReviews.setAdapter(newsListingAdapter);
+                            rvReviews.setLayoutManager(llReviews);
                         }
                     }
                 }
