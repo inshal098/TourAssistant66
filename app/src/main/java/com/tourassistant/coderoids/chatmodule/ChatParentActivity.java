@@ -12,6 +12,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -46,6 +47,7 @@ import java.util.Map;
 
 public class ChatParentActivity extends AppCompatActivity implements onClickListner {
     RecyclerView chatList;
+    TextView noChatMessage;
     LinearLayoutManager rvManRec;
     ExtendedFloatingActionButton newMessage;
     boolean rowState[];
@@ -63,6 +65,7 @@ public class ChatParentActivity extends AppCompatActivity implements onClickList
         onClickListner = (onClickListner) this;
         newMessage = findViewById(R.id.add_message);
         chatList = findViewById(R.id.chat_list);
+        noChatMessage = findViewById(R.id.no_chats);
         rvManRec = new LinearLayoutManager(this);
         rvManRec.setOrientation(LinearLayoutManager.VERTICAL);
 
@@ -129,9 +132,11 @@ public class ChatParentActivity extends AppCompatActivity implements onClickList
                             allChatsIds.add(pairName.toString());
                         }
                     }
-                    if(allChatsIds.size()>0){
+                    if(allChatsIds.size() > 0){
+                        noChatMessage.setVisibility(View.GONE);
                         manageAllChatsThreads(allChatsIds);
-                    }
+                    } else
+                        noChatMessage.setVisibility(View.VISIBLE);
                 }
             }
 

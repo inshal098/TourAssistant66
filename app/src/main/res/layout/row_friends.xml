@@ -2,9 +2,9 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
+    android:layout_width="130dp"
     android:orientation="vertical"
-    android:layout_height="wrap_content"
+    android:layout_height="150dp"
     android:layout_margin="10dp"
     android:layout_gravity="center_horizontal"
     android:gravity="center"
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Name"
+        android:text="Loading adasdasdasdasd"
         android:id="@+id/tv_name"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -35,8 +35,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_height="50dp"
         android:text="Follow"
         android:id="@+id/btn_follow"
         android:textColor="@color/white"

@@ -15,14 +15,20 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,10 +40,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.DirectionsApi;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
@@ -47,12 +58,15 @@ import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.DirectionsStep;
 import com.google.maps.model.EncodedPolyline;
 import com.tourassistant.coderoids.R;
+import com.tourassistant.coderoids.adapters.UserReviewsAdapter;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.helpers.DirectionsJSONParser;
 import com.tourassistant.coderoids.helpers.LocationHelper;
 import com.tourassistant.coderoids.helpers.PermissionHelper;
 import com.tourassistant.coderoids.helpers.RuntimePermissionsActivity;
 import com.tourassistant.coderoids.interfaces.LoginHelperInterface;
+import com.tourassistant.coderoids.models.ReviewModel;
+import com.tourassistant.coderoids.profilefriends.FriendsProfileActivity;
 import com.tourassistant.coderoids.services.LocationService;
 import com.tourassistant.coderoids.services.LocationThread;
 import com.visuality.f32.temperature.Temperature;
@@ -82,7 +96,7 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
     LatLng currentLocation;
     LatLng destination;
     MarkerOptions marker, marker2;
-    Button startNavigation ,foreCastTrip;
+    Button startNavigation ,foreCastTrip ,reviewTrip;
     ImageView currentWeatherIcon;
     ImageView destWeatherIcon;
     LocationHelper locationManager = null;
@@ -91,6 +105,8 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
     SharedPreferences.Editor editorLogin;
     SharedPreferences prefLogin;
     ExtendedFloatingActionButton hazardFabBut;
+    RecyclerView rvReviews;
+    LinearLayoutManager llReviews;
     @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,11 +122,14 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
 
         cityCurrent =  findViewById(R.id.city_field);
         foreCastTrip =  findViewById(R.id.forecast_trip);
+        reviewTrip =  findViewById(R.id.review_trip);
         updatedCurrentField = findViewById(R.id.updated_field);
         currentWeatherIcon =  findViewById(R.id.weather_icon);
         currentTemperatureField =  findViewById(R.id.current_temperature_field);
         detailsField =  findViewById(R.id.details_field);
-
+        rvReviews = findViewById(R.id.user_reviews);
+        llReviews = new LinearLayoutManager(this);
+        llReviews.setOrientation(LinearLayoutManager.HORIZONTAL);
         cityDest =  findViewById(R.id.city_field_dest);
         updatedDestField = findViewById(R.id.updated_field_dest);
         destWeatherIcon =  findViewById(R.id.weather_icon_dest);
@@ -164,7 +183,33 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
 
             }
         });
+
+        reviewTrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAlertDialog();
+            }
+        });
         updateFirebaseDb();
+        fetchReviews();
+    }
+
+    private void fetchReviews() {
+        FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+        rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId()).collection("reviews").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isComplete()) {
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                    if (documentSnapshots != null) {
+                        documentSnapshots.size();
+                        UserReviewsAdapter newsListingAdapter = new UserReviewsAdapter(StartTrip.this, documentSnapshots);
+                        rvReviews.setAdapter(newsListingAdapter);
+                        rvReviews.setLayoutManager(llReviews);
+                    }
+                }
+            }
+        });
     }
 
     private void updateFirebaseDb() {
@@ -533,5 +578,34 @@ public class StartTrip extends RuntimePermissionsActivity implements LoginHelper
             // Drawing polyline in the Google Map for the i-th route
             map.addPolyline(lineOptions);
         }
+    }
+
+    private void showAlertDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.view_submit_review, null);
+        dialogBuilder.setView(dialogView);
+        RatingBar appCompatRatingBar = dialogView.findViewById(R.id.rating_bar);
+        TextInputEditText tvReviewText = dialogView.findViewById(R.id.review_et);
+        Button btnSubmit = dialogView.findViewById(R.id.btn_submit);
+        AlertDialog alertDialog = dialogBuilder.create();
+        appCompatRatingBar.setRating((float) 3.0);
+        btnSubmit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                float rating = appCompatRatingBar.getRating();
+                String message = tvReviewText.getText().toString();
+                ReviewModel reviewModel = new ReviewModel();
+                reviewModel.setReviewerId(AppHelper.currentProfileInstance.getUserId());
+                reviewModel.setRatingCount(rating+"");
+                reviewModel.setReviewMessage(message);
+                FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+                rootRef.collection("PublicTrips").document(AppHelper.tripEntityList.getFirebaseId())
+                        .collection("reviews").document().set(reviewModel);
+                Toast.makeText(StartTrip.this, "Submitted", Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
+            }
+        });
+        alertDialog.show();
     }
 }

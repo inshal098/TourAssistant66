@@ -1,12 +1,14 @@
 package com.tourassistant.coderoids.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,6 +23,7 @@ import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.interfaces.onClickListner;
 import com.tourassistant.coderoids.models.Profile;
+import com.tourassistant.coderoids.profilefriends.FriendsProfileActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -93,6 +96,14 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
                     }
                 }
             });
+
+            Profile finalCurrentProfile = currentProfile;
+            viewHolder.llContent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    context.startActivity(new Intent(context, FriendsProfileActivity.class).putExtra("userId", finalCurrentProfile.getUserId()));
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -115,9 +126,11 @@ public class TripRequestAdapter extends RecyclerView.Adapter<TripRequestAdapter.
         MaterialTextView mtUserName;
         MaterialButton btnFollow;
         CircleImageView userImage;
+        LinearLayout llContent;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mtUserName = itemView.findViewById(R.id.tv_name);
+            llContent = itemView.findViewById(R.id.ll_content);
             btnFollow = itemView.findViewById(R.id.btn_follow);
             userImage = itemView.findViewById(R.id.image);
         }

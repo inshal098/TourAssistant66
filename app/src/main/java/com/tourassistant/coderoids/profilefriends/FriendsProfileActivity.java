@@ -42,6 +42,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.PersonalPicturesUploads;
 import com.tourassistant.coderoids.adapters.PortfolioAdapter;
+import com.tourassistant.coderoids.adapters.UserReviewsAdapter;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.helpers.LocationHelper;
 import com.tourassistant.coderoids.models.Profile;
@@ -62,8 +63,8 @@ public class FriendsProfileActivity extends AppCompatActivity {
     TextView tvName,tvLocationStatus ,tvFollowersCount ,tvFollowingCount,tvPostCount,tvIntrest ,tvDescription ,website ,tvPersonalPictures ,tvTripsPicture;
     RadioGroup rgContentGroup;
     RadioButton rbtnLocation , rbtnPosts;
-    RecyclerView rvNews ,rvTripPhoto;
-    LinearLayoutManager llmNews;
+    RecyclerView rvNews ,rvTripPhoto,rvReviews;
+    LinearLayoutManager llmNews,llReviews;
     GoogleMap map;
     LinearLayout mapLayout;
     List<TripCurrentLocation> tripCurrentLocations;
@@ -85,7 +86,9 @@ public class FriendsProfileActivity extends AppCompatActivity {
         tvDescription = findViewById(R.id.description);
         website = findViewById(R.id.website);
         tvLocationStatus = findViewById(R.id.location_status);
-
+        rvReviews = findViewById(R.id.user_reviews);
+        llReviews = new LinearLayoutManager(this);
+        llReviews.setOrientation(LinearLayoutManager.HORIZONTAL);
         llmNews = new LinearLayoutManager(this);
         llmNews.setOrientation(LinearLayoutManager.VERTICAL);
         tvName = findViewById(R.id.user_name);
@@ -287,6 +290,21 @@ public class FriendsProfileActivity extends AppCompatActivity {
                         rvTripPhoto.setLayoutManager(new GridLayoutManager(FriendsProfileActivity.this, 3));
 //                            documentSnapshots.size();
 //
+                    }
+                }
+            }
+        });
+
+        rootRef.collection("Users").document(userId).collection("reviews").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isComplete()) {
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                    if (documentSnapshots != null) {
+                        documentSnapshots.size();
+                        UserReviewsAdapter newsListingAdapter = new UserReviewsAdapter(FriendsProfileActivity.this, documentSnapshots);
+                        rvReviews.setAdapter(newsListingAdapter);
+                        rvReviews.setLayoutManager(llReviews);
                     }
                 }
             }
