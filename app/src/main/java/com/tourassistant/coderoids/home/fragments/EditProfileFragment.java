@@ -52,6 +52,7 @@ import org.json.JSONException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -289,6 +290,13 @@ public class EditProfileFragment extends Fragment {
             } else if (requestCode == REQUEST_GALLERY_PHOTO) {
                 Uri selectedImage = data.getData();
                 try {
+                    final InputStream imageStream = getActivity().getContentResolver().openInputStream(selectedImage);
+                    final Bitmap selectedImageBitmap = BitmapFactory.decodeStream(imageStream);
+                    cUserImage.setImageBitmap(selectedImageBitmap);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    selectedImageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    profileImageBlob = Blob.fromBytes(byteArray);
                     //mPhotoFile = mCompressor.compressToFile(new File(getRealPathFromUri(selectedImage)));
                 } catch (Exception e) {
                     e.printStackTrace();

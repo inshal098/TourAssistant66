@@ -11,6 +11,7 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
@@ -52,6 +53,7 @@ import com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -340,7 +342,13 @@ public class ReportHazard extends AppCompatActivity {
             } else if (requestCode == REQUEST_GALLERY_PHOTO) {
                 Uri selectedImage = data.getData();
                 try {
-                    //mPhotoFile = mCompressor.compressToFile(new File(getRealPathFromUri(selectedImage)));
+                    final InputStream imageStream = getContentResolver().openInputStream(selectedImage);
+                    final Bitmap selectedImageBitmap = BitmapFactory.decodeStream(imageStream);
+                    ivProofImages.setImageBitmap(selectedImageBitmap);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    selectedImageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] byteArray = stream.toByteArray();
+                    profileImageBlob = Blob.fromBytes(byteArray);
                 } catch (Exception e) {
                     e.printStackTrace();
                     FirebaseCrashlytics.getInstance().recordException(e);
