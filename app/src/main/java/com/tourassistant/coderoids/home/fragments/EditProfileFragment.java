@@ -40,7 +40,6 @@ import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
-import com.tourassistant.coderoids.BuildConfig;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.IntrestsAdapter;
 import com.tourassistant.coderoids.helpers.AppHelper;

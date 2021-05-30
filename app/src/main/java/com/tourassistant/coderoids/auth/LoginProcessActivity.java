@@ -21,7 +21,7 @@ public class LoginProcessActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_process);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         FirebaseUser users= FirebaseAuth.getInstance().getCurrentUser();
-        if(users!= null &&users.getEmail() != null && !users.getEmail().matches("")){
+        if(users!= null && users.getEmail() != null && !users.getEmail().matches("")){
             Intent intent = new Intent(this, PreDashBoardActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);

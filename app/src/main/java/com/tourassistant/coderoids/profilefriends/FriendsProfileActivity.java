@@ -36,15 +36,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.tourassistant.PreDashBoardActivity;
 import com.tourassistant.coderoids.R;
 import com.tourassistant.coderoids.adapters.PersonalPicturesUploads;
 import com.tourassistant.coderoids.adapters.PortfolioAdapter;
 import com.tourassistant.coderoids.adapters.UserReviewsAdapter;
 import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.helpers.LocationHelper;
+import com.tourassistant.coderoids.models.FriendRequestModel;
 import com.tourassistant.coderoids.models.Profile;
 import com.tourassistant.coderoids.models.ReviewModel;
 import com.tourassistant.coderoids.models.TripCurrentLocation;
@@ -68,9 +72,10 @@ public class FriendsProfileActivity extends AppCompatActivity {
     GoogleMap map;
     LinearLayout mapLayout;
     List<TripCurrentLocation> tripCurrentLocations;
-    Button locationCheckMap ,reviewUser;
+    Button locationCheckMap ,reviewUser ,unFollow;
     ImageButton ibCross;
     String profileUserId;
+    List<DocumentSnapshot> friendsList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +89,7 @@ public class FriendsProfileActivity extends AppCompatActivity {
         locationCheckMap = findViewById(R.id.location_check_map);
         tvIntrest = findViewById(R.id.prefs);
         tvDescription = findViewById(R.id.description);
+        unFollow = findViewById(R.id.unfollow);
         website = findViewById(R.id.website);
         tvLocationStatus = findViewById(R.id.location_status);
         rvReviews = findViewById(R.id.user_reviews);
@@ -99,7 +105,7 @@ public class FriendsProfileActivity extends AppCompatActivity {
         ibCross = findViewById(R.id.ib_cross);
        // rbtnPosts = findViewById(R.id.radio_posts);
         profileUserId = getIntent().getStringExtra("userId");
-        fetchUserInformation(profileUserId);
+
 
         tvPersonalPictures.setBackgroundColor(getResources().getColor(R.color.appTheme2));
         tvPersonalPictures.setTextColor(getResources().getColor(R.color.white));
@@ -150,6 +156,48 @@ public class FriendsProfileActivity extends AppCompatActivity {
                 showAlertDialog();
             }
         });
+        tvPostCount.setText("0");
+        unFollow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                unFollowCurrentUser();
+            }
+        });
+        fetchUserInformation(profileUserId);
+    }
+
+    private void unFollowCurrentUser() {
+        FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+        String documentId = fetchFriendDocumentNode();
+        rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("Friends").document(documentId).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                rootRef.collection("Users").document(profileUserId).collection("Friends").document(documentId).delete();
+                fetchUserInformation(AppHelper.currentProfileInstance.getUserId());
+                finish();
+            }
+        });
+    }
+
+    private String fetchFriendDocumentNode() {
+        String documentID = "";
+        String toMatchIdCu = AppHelper.currentProfileInstance.getUserId();
+        String toMatchIdRec = profileUserId;
+        for(int i=0; i< friendsList.size() ; i++){
+            FriendRequestModel friendRequestModel = friendsList.get(i).toObject(FriendRequestModel.class);
+            String idCurrent = "" , idReciever = "";
+            if(friendRequestModel.getUserFirestoreIdSender().matches(toMatchIdCu)){
+                idCurrent  = friendRequestModel.getUserFirestoreIdSender();
+                idReciever = friendRequestModel.getUserFirestoreIdReceiver();
+            } else if(friendRequestModel.getUserFirestoreIdReceiver().matches(toMatchIdCu)){
+                idCurrent  = friendRequestModel.getUserFirestoreIdReceiver();
+                idReciever = friendRequestModel.getUserFirestoreIdSender();
+            }
+
+            if(toMatchIdCu .matches(idCurrent) && toMatchIdRec.matches(idReciever))
+                return friendsList.get(i).getId();
+        }
+        return  documentID;
     }
 
 
@@ -220,6 +268,22 @@ public class FriendsProfileActivity extends AppCompatActivity {
 
     private void fetchUserInformation(String userId) {
         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+        rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId()).collection("Friends").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                try {
+                    if (task.isComplete()) {
+                        friendsList = task.getResult().getDocuments();
+                        AppHelper.allFriends = friendsList;
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(ex);
+                }
+            }
+        });
+
+
         rootRef.collection("Users").document(userId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -252,7 +316,7 @@ public class FriendsProfileActivity extends AppCompatActivity {
                 if(task.isComplete()){
                     List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                     if (documentSnapshots != null) {
-                        documentSnapshots.size();
+                        tvPostCount.setText(documentSnapshots.size()+"");
                         PersonalPicturesUploads newsListingAdapter = new PersonalPicturesUploads(FriendsProfileActivity.this, documentSnapshots);
                         rvNews.setAdapter(newsListingAdapter);
                         rvNews.setLayoutManager(new GridLayoutManager(FriendsProfileActivity.this, 3));;

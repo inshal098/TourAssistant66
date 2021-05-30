@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -85,12 +86,12 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                 handleState();
             }
         });
-        handleState();
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Intent intent = new Intent();
             String packageName = getPackageName();
             PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
-            if (pm!= null) {
+            if (pm != null) {
                 if (!pm.isIgnoringBatteryOptimizations(packageName)) {
                     intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
                     intent.setData(Uri.parse("package:" + packageName));
@@ -100,6 +101,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                 }
             }
         }
+        handleState();
     }
 
     private boolean isServiceRunning(Class<?> serviceClass) {
@@ -164,10 +166,11 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 try {
                     AppHelper.currentProfileInstance = documentSnapshot.toObject(Profile.class);
-                    if (AppHelper.currentProfileInstance != null)
+                    if (AppHelper.currentProfileInstance != null) {
                         AppHelper.currentProfileInstance.setUserId(documentSnapshot.getId());
-                    if (AppHelper.currentProfileInstance.getInterests() != null && !AppHelper.currentProfileInstance.getInterests().matches(""))
-                        AppHelper.interestUser = new JSONArray(AppHelper.currentProfileInstance.getInterests());
+                        if (AppHelper.currentProfileInstance.getInterests() != null && !AppHelper.currentProfileInstance.getInterests().matches(""))
+                            AppHelper.interestUser = new JSONArray(AppHelper.currentProfileInstance.getInterests());
+                    }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     FirebaseCrashlytics.getInstance().recordException(ex);
@@ -181,7 +184,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                 try {
                     if (task.isComplete()) {
                         List<DocumentSnapshot> publicTrips = task.getResult().getDocuments();
-                        if (publicTrips.size() > 0) {
+                        if (publicTrips.size() > 0 && AppHelper.interestUser != null && AppHelper.interestUser.length() > 0) {
                             FilterPublicTrips filterPublicTrips = new FilterPublicTrips(PreDashBoardActivity.this, publicTrips, requestCompletionListener);
                             AppHelper.filteredTrips = new ArrayList<>();
                             filterPublicTrips.filteredTrips();
@@ -227,6 +230,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     FirebaseCrashlytics.getInstance().recordException(ex);
+                    requestCompletionListener.onAllUsersCompletion(true);
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -234,6 +238,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
             public void onFailure(@NonNull Exception e) {
                 e.printStackTrace();
                 FirebaseCrashlytics.getInstance().recordException(e);
+                requestCompletionListener.onAllUsersCompletion(true);
             }
         });
     }
@@ -241,43 +246,37 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
     @Override
     public void onAllUsersCompletion(boolean status) {
         try {
-            if (status) {
-                requestCompletionListener.onAllUsersCompletion(false);
-            } else {
-                if (AppHelper.currentProfileInstance != null) {
-                    rootRef.collection("Users").document(users.getUid()).collection("Friends").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            try {
-                                if (task.isComplete()) {
-                                    List<DocumentSnapshot> friendsList = task.getResult().getDocuments();
-                                    AppHelper.allFriends = friendsList;
-                                    DocumentReference uidRef4 = rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId());
-                                    uidRef4.update("followers", AppHelper.allFriends.size() + "");
-                                    uidRef4.update("following", AppHelper.allFriends.size() + "");
-                                    progressDialog.dismiss();
-                                    if (!loginProcessHelper.checkGpsStatus()) {
-                                        loginProcessHelper.askGPSPermission();
-                                    } else if (!checkPermissions())
-                                        PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                                                , loginProcessHelper.REQUEST_PERMISSIONS);
-                                    else
-                                        requestCurrentLocation();
-                                }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                                FirebaseCrashlytics.getInstance().recordException(ex);
+            if (AppHelper.currentProfileInstance != null) {
+                rootRef.collection("Users").document(users.getUid()).collection("Friends").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        try {
+                            if (task.isComplete()) {
+                                List<DocumentSnapshot> friendsList = task.getResult().getDocuments();
+                                AppHelper.allFriends = friendsList;
+                                DocumentReference uidRef4 = rootRef.collection("Users").document(AppHelper.currentProfileInstance.getUserId());
+                                uidRef4.update("followers", AppHelper.allFriends.size() + "");
+                                uidRef4.update("following", AppHelper.allFriends.size() + "");
+                                progressDialog.dismiss();
+                                if (!loginProcessHelper.checkGpsStatus()) {
+                                    loginProcessHelper.askGPSPermission();
+                                } else if (!checkPermissions())
+                                        openPermissionDialog("");
+                                else
+                                    requestCurrentLocation();
                             }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            FirebaseCrashlytics.getInstance().recordException(ex);
                         }
-                    });
-                } else {
-                    progressDialog.dismiss();
-                    if (!checkPermissions())
-                        PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                                , loginProcessHelper.REQUEST_PERMISSIONS);
-                    else
-                        requestCurrentLocation();
-                }
+                    }
+                });
+            } else {
+                progressDialog.dismiss();
+                if (!checkPermissions())
+                    openPermissionDialog("");
+                else
+                    requestCurrentLocation();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -288,8 +287,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
     @Override
     public void onPrivacyPolicy(String state) {
         if (!checkPermissions())
-            PreDashBoardActivity.super.requestAppPermissions(loginProcessHelper.permissionsManager(), R.string.runtime_permissions_txt
-                    , loginProcessHelper.REQUEST_PERMISSIONS);
+            openPermissionDialog("");
         else
             requestCurrentLocation();
     }
@@ -367,6 +365,7 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
     private boolean checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             int permissionLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+            permissionLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE);
             if (permissionLocation < 0) {
                 return false;
             } else {
@@ -390,5 +389,64 @@ public class PreDashBoardActivity extends RuntimePermissionsActivity implements 
             }
         }
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        handleState();
+    }
+
+    public void openPermissionDialog(String versionCode) {
+        if(loginProcessHelper == null){
+            loginProcessHelper = new PermissionHelper(this);
+        }
+        if(loginProcessHelper.checkGpsStatus()) {
+            androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this, R.style.CustomDialog);
+            LayoutInflater inflater = getLayoutInflater();
+            View dialogView = inflater.inflate(R.layout.gps_enable_view, null);
+            Button btnSubmit = dialogView.findViewById(R.id.btn_turngps_on);
+            TextView titlePermission = dialogView.findViewById(R.id.title_permission);
+            TextView btnBack = dialogView.findViewById(R.id.tv_nothanks);
+            final androidx.appcompat.app.AlertDialog dialog = builder.setView(dialogView).create();
+            dialog.setCancelable(false);
+            btnSubmit.setText("Open Settings");
+            if(versionCode.matches(""))
+                titlePermission.setText("Use Your Location & Other Permissions");
+            else
+                titlePermission.setText("Use Your Location");
+
+            btnBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog.dismiss();
+                    checkPermissions();
+                }
+            });
+            btnSubmit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        dialog.dismiss();
+                        if(versionCode.matches("")){
+                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+                            intent.setData(uri);
+                            startActivity(intent);
+
+
+                        } else
+                            onPrivacyPolicy("checkPermissions");
+//                    }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+
+                }
+            });
+            dialog.show();
+        } else {
+            loginProcessHelper.askGPSPermission();
+        }
     }
 }

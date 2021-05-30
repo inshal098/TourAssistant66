@@ -225,6 +225,7 @@ public class ProfileFragment extends Fragment {
                 rvTripPhoto.setVisibility(View.VISIBLE);
             }
         });
+        tvPostCount.setText("0");
     }
 
     private void fetchUserPosts() {
@@ -236,7 +237,7 @@ public class ProfileFragment extends Fragment {
                     if (task.isComplete()) {
                         List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
                         if (documentSnapshots != null) {
-                            documentSnapshots.size();
+                            tvPostCount.setText(documentSnapshots.size()+"");
                             PersonalPicturesUploads newsListingAdapter = new PersonalPicturesUploads(getContext(), documentSnapshots);
                             rvNews.setAdapter(newsListingAdapter);
                             rvNews.setLayoutManager(new GridLayoutManager(getContext(), 3));

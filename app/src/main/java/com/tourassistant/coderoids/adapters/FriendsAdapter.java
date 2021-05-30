@@ -2,6 +2,8 @@ package com.tourassistant.coderoids.adapters;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,6 +25,7 @@ import com.tourassistant.coderoids.helpers.AppHelper;
 import com.tourassistant.coderoids.helpers.NotificationPublisher;
 import com.tourassistant.coderoids.interfaces.onClickListner;
 import com.tourassistant.coderoids.models.FriendRequestModel;
+import com.tourassistant.coderoids.models.Profile;
 import com.tourassistant.coderoids.plantrip.tripdb.TripEntity;
 
 import org.json.JSONArray;
@@ -95,6 +99,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 int finalPosition = position;
                 String finalReciverId = reciverId;
                 String finalCurrentUser = currentUser;
+                Profile profile = AppHelper.getUserProfileObj(finalCurrentUser);
+                if(profile != null){
+                    if(profile.getProfileImage() != null){
+                        byte [] bytes=   profile.getProfileImage().toBytes();
+                        Bitmap bmp = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+                        viewHolder.userImage.setImageBitmap(bmp);
+                    }
+                }
                 viewHolder.btnFollow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -146,11 +158,12 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     public class ViewHolder extends RecyclerView.ViewHolder {
         MaterialTextView mtUserName;
         MaterialButton btnFollow;
-
+        ShapeableImageView userImage;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mtUserName = itemView.findViewById(R.id.tv_name);
             btnFollow = itemView.findViewById(R.id.btn_follow);
+            userImage = itemView.findViewById(R.id.image);
         }
     }
 }

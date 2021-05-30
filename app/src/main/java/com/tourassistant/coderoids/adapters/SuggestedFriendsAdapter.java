@@ -2,6 +2,8 @@ package com.tourassistant.coderoids.adapters;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -20,6 +23,7 @@ import com.tourassistant.coderoids.helpers.NotificationPublisher;
 import com.tourassistant.coderoids.interfaces.onClickListner;
 import com.tourassistant.coderoids.models.FriendRequestModel;
 import com.tourassistant.coderoids.models.NotificationPublish;
+import com.tourassistant.coderoids.models.Profile;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,6 +60,14 @@ public class SuggestedFriendsAdapter extends RecyclerView.Adapter<SuggestedFrien
                 DocumentSnapshot documentSnapshot = friendsList.get(position);
                 viewHolder.mtUserName.setText(documentSnapshot.getString("userName"));
                 int finalPosition = position;
+                Profile profile = AppHelper.getUserProfileObj(documentSnapshot.getId());
+                if(profile != null){
+                    if(profile.getProfileImage() != null){
+                        byte [] bytes=   profile.getProfileImage().toBytes();
+                        Bitmap bmp = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+                        viewHolder.userImage.setImageBitmap(bmp);
+                    }
+                }
                 viewHolder.btnFollow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -109,10 +121,13 @@ public class SuggestedFriendsAdapter extends RecyclerView.Adapter<SuggestedFrien
     public class ViewHolder extends RecyclerView.ViewHolder {
         MaterialTextView mtUserName;
         MaterialButton btnFollow;
+        ShapeableImageView userImage;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mtUserName = itemView.findViewById(R.id.tv_name);
             btnFollow = itemView.findViewById(R.id.btn_follow);
+            userImage = itemView.findViewById(R.id.image);
+
         }
     }
 }

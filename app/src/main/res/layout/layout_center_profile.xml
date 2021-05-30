@@ -186,32 +186,43 @@
                 </LinearLayout>
             </ScrollView>
         </RelativeLayout>
-
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/create_a_post"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_centerInParent="true"
-            android:layout_margin="20dp"
-            android:backgroundTint="@color/green"
-            android:text="Create a Post"
-            android:textColor="@color/white"
-            app:icon="@drawable/ic_add"
-            app:iconTint="@color/white" />
+            android:gravity="center"
+            >
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/create_a_post"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".7"
+                android:layout_centerInParent="true"
+                android:layout_margin="10dp"
+                android:backgroundTint="@color/green"
+                android:textAlignment="center"
+                android:textSize="10sp"
+                android:text="Create a Post"
+                android:textColor="@color/white"
+                app:icon="@drawable/ic_add"
+                app:iconTint="@color/white" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/_chat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="20dp"
-            android:backgroundTint="@color/orange"
-            android:scaleType="center"
-            android:src="@drawable/ic_messenger"
-            android:tint="@color/white"
-            app:rippleColor="@color/orange" />
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/_chat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_toEndOf="@+id/create_a_post"
+                android:layout_margin="10dp"
+                android:backgroundTint="@color/orange"
+                android:scaleType="center"
+                android:src="@drawable/ic_messenger"
+                android:tint="@color/white"
+                android:textSize="10sp"
+                app:rippleColor="@color/orange" />
+
+        </LinearLayout>
+
     </RelativeLayout>
 
 </merge>

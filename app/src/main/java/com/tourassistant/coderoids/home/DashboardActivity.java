@@ -301,11 +301,11 @@ public class DashboardActivity extends BaseActivity {
                 navController.navigate(R.id.profileFragment);
                 break;
             case R.id.logout:
-                FirebaseAuth mAuth = FirebaseAuth.getInstance();
-                mAuth.signOut();
+                if(mGoogleSignInClient != null)
+                    mGoogleSignInClient.signOut();
+                FirebaseAuth.getInstance().signOut();
                 FirebaseMessaging.getInstance().deleteToken();
                 AppHelper.interestUser = new JSONArray();
-                mGoogleSignInClient.signOut();
                 Intent intent = new Intent(DashboardActivity.this, LoginProcessActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);

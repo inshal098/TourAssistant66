@@ -383,7 +383,7 @@ public class AppHelper {
 
     public static Profile getUserProfileObj(String id){
         for (int i = 0; i < AppHelper.allUsers.size(); i++) {
-            if(id.matches(AppHelper.currentProfileInstance.getUserId()))
+            if(AppHelper.currentProfileInstance != null && id.matches(AppHelper.currentProfileInstance.getUserId()))
                 return  AppHelper.currentProfileInstance;
             if (id.matches(AppHelper.allUsers.get(i).getId())) {
                 Profile profile = AppHelper.allUsers.get(i).toObject(Profile.class);

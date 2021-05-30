@@ -134,6 +134,14 @@
                             app:layout_constraintStart_toStartOf="@+id/tv_following_count"
                             app:layout_constraintTop_toBottomOf="@+id/tv_following_count" />
 
+                        <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Un Follow"
+                            android:id="@+id/unfollow"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="@+id/textPosts"
+                            app:layout_constraintTop_toBottomOf="@+id/textFollowers" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </RelativeLayout>
             </LinearLayout>

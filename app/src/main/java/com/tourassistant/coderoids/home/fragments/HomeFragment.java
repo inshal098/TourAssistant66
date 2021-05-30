@@ -175,6 +175,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener,
 
     private void fetchDestinations() {
         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+
         rootRef.collection("Destinations").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -185,7 +186,7 @@ public class HomeFragment extends Fragment implements RequestCompletionListener,
                         DocumentSnapshot documentSnapshot = placesNew.get(i);
                         PlacesModel placesModel = documentSnapshot.toObject(PlacesModel.class);
                         String tripTags = placesModel.getTripTags();
-                        if (AppHelper.currentProfileInstance.getInterests() != null
+                        if (AppHelper.currentProfileInstance != null && AppHelper.currentProfileInstance.getInterests() != null
                                 && !AppHelper.currentProfileInstance.getInterests().matches("")
                         && tripTags != null && !tripTags.matches("")) {
                             JSONArray tripInterestTag = null;
